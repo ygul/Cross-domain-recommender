@@ -7,8 +7,20 @@ import pandas as pd
 
 BOOKS_FILE = "/mnt/d/Data voor master vakken/GenAI/goodreads_books.json.gz"
 AUTHORS_FILE = "/mnt/d/Data voor master vakken/GenAI/goodreads_book_authors.json.gz"
-OUTPUT_XLSX = "goodreads_1000_books_clean.xlsx"
-NEEDED = 1000
+OUTPUT_XLSX = "goodreads_10_each_simplified_genre.xlsx"
+
+TARGET_PER_GENRE = 10
+GENRES_TARGET = ["Sci-Fi", "Fantasy", "Thriller", "Drama", "Horror", "Comedy", "Romance"]
+
+SIMPLIFIED_GENRE_KEYWORDS = {
+    "Sci-Fi": ["science fiction", "sci-fi", "scifi", "sf", "space", "alien", "time travel", "dystopia", "cyberpunk"],
+    "Fantasy": ["fantasy", "magic", "magical", "dragon", "wizard", "witch", "epic fantasy", "high fantasy", "sword", "myth"],
+    "Thriller": ["thriller", "suspense", "crime", "mystery", "detective", "noir", "psychological thriller"],
+    "Drama": ["drama", "literary", "realistic", "family", "life", "relationship", "historical", "character driven"],
+    "Horror": ["horror", "scary", "terror", "ghost", "haunted", "vampire", "zombie", "supernatural horror"],
+    "Comedy": ["comedy", "humor", "humour", "funny", "satire", "parody", "comic"],
+    "Romance": ["romance", "romantic", "love", "love story", "chick lit", "relationship romance"],
+}
 
 def sanitize_excel(t):
     if isinstance(t, str):
@@ -135,12 +147,31 @@ def extract_author_names_from_book(book: dict, author_map: dict):
 
     return ", ".join(out) if out else None
 
-def is_valid_row(row, required_columns):
-    for col in required_columns:
-        val = row[col]
-        if val is None or (isinstance(val, float) and pd.isna(val)):
-            return False
-        if isinstance(val, str) and val.strip() == "":
+def simplify_genre(source_genres: str | None):
+    if not source_genres or not isinstance(source_genres, str):
+        return None
+    text = source_genres.lower()
+    for simplified, keywords in SIMPLIFIED_GENRE_KEYWORDS.items():
+        for kw in keywords:
+            if kw in text:
+                return simplified
+    return None
+
+def is_missing(val):
+    if val is None:
+        return True
+    if isinstance(val, float) and pd.isna(val):
+        return True
+    if isinstance(val, str) and val.strip() == "":
+        return True
+    return False
+
+def row_ok(row_dict):
+    allowed_empty = {"enriched_description"}
+    for k, v in row_dict.items():
+        if k in allowed_empty:
+            continue
+        if is_missing(v):
             return False
     return True
 
@@ -151,77 +182,92 @@ for path, label in [(BOOKS_FILE, "BOOKS_FILE"), (AUTHORS_FILE, "AUTHORS_FILE")]:
 
 author_map = load_author_id_to_name(AUTHORS_FILE)
 
-selected = []
-skip_lines = random.randint(0, 100_000)
+picked = {g: [] for g in GENRES_TARGET}
 
-with gzip.open(BOOKS_FILE, "rt", encoding="utf-8") as f:
-    for _ in range(skip_lines):
-        try:
-            next(f)
-        except StopIteration:
-            break
+def all_genres_filled():
+    return all(len(picked[g]) >= TARGET_PER_GENRE for g in GENRES_TARGET)
 
-    for line in f:
-        if len(selected) >= NEEDED:
-            break
+def try_add_book_to_bucket(book: dict):
+    desc = book.get("description")
+    title = book.get("title")
+    language = book.get("language_code")
 
-        try:
-            book = json.loads(line)
-        except:
-            continue
+    if not (language == "eng" and title and desc and isinstance(desc, str) and len(desc) > 30):
+        return
 
-        desc = book.get("description")
-        title = book.get("title")
-        language = book.get("language_code")
+    author = extract_author_names_from_book(book, author_map)
+    year = extract_year(book)
+    ratings_count = to_int(book.get("ratings_count"))
+    avg_rating = to_float(book.get("average_rating"))
+    genres_list = extract_genres(book)
+    source_genres = list_to_str(genres_list)
+    simplified = simplify_genre(source_genres)
 
-        if (
-            language == "eng"
-            and title
-            and desc
-            and isinstance(desc, str)
-            and len(desc) > 30
-        ):
-            author = extract_author_names_from_book(book, author_map)
+    if simplified not in picked:
+        return
+    if len(picked[simplified]) >= TARGET_PER_GENRE:
+        return
 
-            selected.append({
-                "book_id": book.get("book_id") or book.get("id"),
-                "title": title,
-                "author": author,
-                "publication_year": extract_year(book),
-                "ratings_count": to_int(book.get("ratings_count")),
-                "avg_rating": to_float(book.get("average_rating")),
-                "summary_original": desc,
-                "genres": extract_genres(book),
-                "summary_enriched": None,
-            })
+    row = {
+        "source_id": book.get("book_id") or book.get("id"),
+        "item_type": "Book",
+        "name": title,
+        "vote_count": ratings_count,
+        "vote_average": avg_rating,
+        "source_overview": desc,
+        "Year": year,
+        "source_genres": source_genres,
+        "Simplified genre": simplified,
+        "created_by / director / author": author,
+        "enriched_description": None,
+    }
 
-if not selected:
-    print("Geen boeken gevonden.")
+    if row_ok(row):
+        picked[simplified].append(row)
+
+max_passes = 3
+current_pass = 0
+
+while current_pass < max_passes and not all_genres_filled():
+    current_pass += 1
+    random_start_offset = random.randint(0, 100_000)
+
+    with gzip.open(BOOKS_FILE, "rt", encoding="utf-8") as file:
+        for _ in range(random_start_offset):
+            try:
+                next(file)
+            except StopIteration:
+                break
+
+        for line in file:
+            if all_genres_filled():
+                break
+
+            try:
+                book = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+
+            try_add_book_to_bucket(book)
+
+rows = []
+for genre in GENRES_TARGET:
+    rows.extend(picked[genre][:TARGET_PER_GENRE])
+
+if not rows:
+    print("Geen rijen gevonden die aan alle eisen voldoen.")
     sys.exit(1)
 
-df = pd.DataFrame(selected)
-
-excel_df = pd.DataFrame({
-    "source_id": df["book_id"],
-    "item_type": "Book",
-    "name": df["title"],
-    "vote_count": df["ratings_count"],
-    "vote_average": df["avg_rating"],
-    "source_overview": df["summary_original"],
-    "Year": df["publication_year"],
-    "source_genres": df["genres"].apply(list_to_str),
-    "Simplified genre": None,
-    "created_by / director / author": df["author"],
-    "enriched_description": df["summary_enriched"],
-})
+excel_df = pd.DataFrame(rows)
 
 for col in excel_df.select_dtypes(include=["object"]).columns:
     excel_df[col] = excel_df[col].apply(sanitize_excel)
 
-allowed_empty = {"Simplified genre", "enriched_description"}
-required_columns = [c for c in excel_df.columns if c not in allowed_empty]
-
-excel_df = excel_df[excel_df.apply(lambda r: is_valid_row(r, required_columns), axis=1)].reset_index(drop=True)
 excel_df.to_excel(OUTPUT_XLSX, index=False)
 
+counts = excel_df["Simplified genre"].value_counts().to_dict()
 print(f"Geschreven: {OUTPUT_XLSX} (rows={len(excel_df)})")
+print("Per genre:", {g: counts.get(g, 0) for g in GENRES_TARGET})
+missing = {g: TARGET_PER_GENRE - counts.get(g, 0) for g in GENRES_TARGET}
+if any(v > 0 for v in missing.values()):
+    print("Niet gehaald (tekort):", {g: v for g, v in missing.items() if v > 0})

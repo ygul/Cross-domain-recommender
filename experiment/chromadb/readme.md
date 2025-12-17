@@ -8,9 +8,15 @@ De database wordt gebruikt voor experimenten met **semantic search** en
 De setup is zo ingericht dat de code **direct vanuit de Git-repository**
 kan worden uitgevoerd, zonder handmatige stappen.
 
----
+## Hoe dit project wordt uitgevoerd
 
-## Architectuur (vast)
+Alle acties verlopen via het **run-script** in de root van de repository:
+
+```bash
+./run.sh
+```
+
+## Architectuur
 
 ```text
 experiment/
@@ -23,3 +29,4 @@ experiment/
         └── config.ini
 run.sh
 requirements.txt
+```

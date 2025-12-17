@@ -1,96 +1,64 @@
-## Libraries ########################################################################################################
-#
-import chromadb
+from pathlib import Path
 import configparser
-import os
+import chromadb
 import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
 import numpy as np
+from sklearn.decomposition import PCA
 
-#
-## Config.ini-bestand ##############################################################################################
-#
-print("Inlezen config.ini bestand")
+# -------------------------------------------------
+# Config & paden
+# -------------------------------------------------
+BASE_DIR = Path(__file__).resolve().parent
+CONFIG_PATH = BASE_DIR / "config.ini"
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read(CONFIG_PATH)
 
-# Haal de mapnaam op uit de config
-db_folder = config['BESTANDEN']['database_mapnaam']
+DB_ROOT = (BASE_DIR / config["BESTANDEN"]["database_mapnaam"]).resolve()
+DATA_DIR = DB_ROOT / "data"
 
-#
-## Aanmaken systeem-mappen ##########################################################################################
-#
-print("Controle of database-map bestaat")
+print(f"Chroma DB root: {DB_ROOT}")
 
-if not os.path.exists(db_folder):
-    os.makedirs(db_folder)
-#
-if not os.path.exists(db_folder):
-    print(f"FOUT: Kan database map '{db_folder}' niet vinden.")
-    exit()
+# -------------------------------------------------
+# Database connect
+# -------------------------------------------------
+client = chromadb.PersistentClient(path=str(DB_ROOT))
+collection_name = config["BESTANDEN"]["collectie_naam"]
 
-#
-## Verbinden met database ###########################################################################################
-#
-print("Verbinden met database")
-
-client = chromadb.PersistentClient(path=db_folder)
-collection = client.get_collection(name="cross_domain_recommender")
-
-count = collection.count()					# Tellen aantal items in database ter controle
-print(f"Aantal items in database: {count}")
+collection = client.get_collection(name=collection_name)
+count = collection.count()
 
 if count == 0:
-    print("Database is leeg.")
-    exit()
+    raise RuntimeError("Collectie is leeg")
 
-#
-## Informatie voor plot ###########################################################################################
-#
-print("Informatie verzamelen voor controle-plots")
+print(f"✔ Aantal vectors: {count}")
 
-result = collection.get(include=['embeddings', 'metadatas'])
-embeddings = result['embeddings']
-metadatas = result['metadatas']
+# -------------------------------------------------
+# Visualisatie
+# -------------------------------------------------
+result = collection.get(include=["embeddings", "metadatas"])
+embeddings = np.array(result["embeddings"])
+metadatas = result["metadatas"]
 
-#
-## Visualisaties ##################################################################################################
-#
-print("Visualisaties maken")
-
-## PCA (breng embedding dimensies terug naar 2)
 pca = PCA(n_components=2)
-vis_dims = pca.fit_transform(embeddings)
+coords = pca.fit_transform(embeddings)
 
-x = [v[0] for v in vis_dims]
-y = [v[1] for v in vis_dims]
+labels = [m.get("Simplified genre", "Onbekend") for m in metadatas]
+unique = sorted(set(labels))
+colors = [unique.index(l) for l in labels]
 
-## Opbouwen plot
 plt.figure(figsize=(10, 8))
-
-kleur_veld = 'Simplified genre'
-labels = [m.get(kleur_veld, 'Onbekend') for m in metadatas]
-
-unique_labels = list(set(labels))
-colors = [unique_labels.index(l) for l in labels]
-    
-scatter = plt.scatter(x, y, c=colors, cmap='tab10', alpha=0.7)
+scatter = plt.scatter(coords[:, 0], coords[:, 1], c=colors, cmap="tab10", alpha=0.7)
 handles, _ = scatter.legend_elements()
-plt.legend(handles, unique_labels, title=kleur_veld, loc="best", bbox_to_anchor=(1, 1))
-	
-plt.title(f"Cross-domain recommender - PCA for {count} vectors")
-plt.xlabel("PCA Component 1")
-plt.ylabel("PCA Component 2")
-plt.grid(True, linestyle='--', alpha=0.3)
+plt.legend(handles, unique, title="Genre", bbox_to_anchor=(1, 1))
+plt.title("Chroma DB – PCA visualisatie")
+plt.grid(True)
 plt.tight_layout()
 
-#
-## Opslaan visualisaties ##########################################################################################
-#
-print("Plots opslaan")
+plt.savefig("visualisatie.png")
+print("visualisatie.png opgeslagen")
 
-output_file = "visualisatie.png"
-plt.savefig(output_file)
-print(f"Afbeelding opgeslagen als: {output_file}")
-plt.show()
+try:
+    plt.show()
+except Exception:
+    pass

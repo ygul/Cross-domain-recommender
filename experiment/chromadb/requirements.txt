@@ -1,0 +1,11 @@
+## Python libraries ##################################################################################################
+#
+
+chromadb
+pandas
+openpyxl
+requests
+matplotlib
+scikit-learn
+sentence-transformers
+huggingface_hub[hf_xet]

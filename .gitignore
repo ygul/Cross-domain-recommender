@@ -1,6 +1,7 @@
 /.env
 /.idea/.name
 /experiment/chromadb/chromadb/
+/experiment/chromadb/data/
 /experiment/chromadb/.venv/lib/python3.12/site-packages/pip/_vendor/packaging/__about__.py
 /experiment/chromadb/.venv/lib/python3.12/site-packages/pip/_internal/cli/__init__.py
 /experiment/chromadb/.venv/lib/python3.12/site-packages/pip/_internal/commands/__init__.py

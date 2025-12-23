@@ -76,10 +76,7 @@ class OpenAIAdapter(LLMAdapter):
                 )
                 
                 text = (response.choices[0].message.content or "").strip()
-                
-                if len(text) < 120:
-                    raise ValueError("Output too short (< 120 chars)")
-                
+                                
                 return text
                 
             except Exception as exc:

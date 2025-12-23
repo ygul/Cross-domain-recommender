@@ -1,5 +1,9 @@
-/.env
-/.idea/.name
+__pycache__/
+/.env/
+/.idea/
+/.vscode/
+/.venv/
+/experiment/data/
 /experiment/chromadb/chromadb/
 /experiment/chromadb/data/
 /experiment/chromadb/.venv/lib/python3.12/site-packages/pip/_vendor/packaging/__about__.py

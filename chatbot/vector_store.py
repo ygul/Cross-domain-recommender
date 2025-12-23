@@ -7,6 +7,7 @@ from typing import Any
 import chromadb
 
 
+
 # -------------------------------------------------
 # Config & paths
 # -------------------------------------------------
@@ -82,9 +83,25 @@ if __name__ == "__main__":
 
     # Create an embedding, run a similarity search and print results
     embedder = QueryEmbedder()
-    query = "fun and laughter by the beach"
+    query = "I want to see stuff about a space bounty hunter going on adventures. I would really like that."
+    query = "I want something emotional about family, loss, and difficult choices, preferably not too light."
+    print(f"Original query: {query}")
+    print("----------------------------------------------------------------------------------------------------------------------------------------------------------------")
+
     query_embedding = embedder.embed(query)
     results = vs.similarity_search(query_embedding, k=3)
     for r in results:
+        print(f"- ID: {r.id}, Score: {r.score}, Metadata: {r.metadata}")
+        print()
+
+    # Now do the same but with LLM-improved query
+    import llm_adapter
+    llm_embedder = QueryEmbedder(llm_adapter=llm_adapter.create_llm_adapter(provider="openai"))
+    improved_query = llm_embedder.improve_query_with_llm(query)
+    improved_query_embedding = llm_embedder.embed(query)
+    improved_results = vs.similarity_search(improved_query_embedding, k=3)
+    print(f"Results for improved query: {improved_query}")
+    print("----------------------------------------------------------------------------------------------------------------------------------------------------------------")
+    for r in improved_results:
         print(f"- ID: {r.id}, Score: {r.score}, Metadata: {r.metadata}")
         print()

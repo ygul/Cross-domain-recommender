@@ -35,7 +35,9 @@ class SearchResult:
 
 
 class VectorStore:
-    def __init__(self, db_root: Path, collection_name: str) -> None:
+    def __init__(self, db_root: Path | None = None, collection_name: str | None = None) -> None:
+        db_root = db_root or DB_ROOT
+        collection_name = collection_name or COLLECTION_NAME
         self._client = chromadb.PersistentClient(path=str(db_root))
         self._collection = self._client.get_collection(name=collection_name)
 

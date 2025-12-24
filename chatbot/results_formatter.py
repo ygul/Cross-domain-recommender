@@ -12,15 +12,16 @@ def format_results(original_query: str,results: list[SearchResult], llm_adapter:
         
         # Metadata available: source_id,item_type,name,vote_count,vote_average,source_overview,Year,source_genres,Simplified genre,created_by / director / author
         title = result.metadata.get("name", "Unknown Title") if result.metadata else "Unknown Title"
+        item_type = result.metadata.get("item_type", "unknown") if result.metadata else "unknown"
         description = result.document or "No description available."
-        formatted_items.append(f"{idx}. {title}\n{description}\n")
+        formatted_items.append(f"{idx}. {title} ({item_type})\n{description}\n")
 
     combined_text = "\n".join(formatted_items)
 
     system_prompt = (
         "You are responsible for explaining search results to users in a concise and readable manner."
         "Format the results clearly, using bullet points or numbered lists as appropriate."
-        "Explain for each item a very brief plot description, and an explanation how it is related to the user's original query."
+        "Explain for each item a very brief plot description, and an explanation how it is related to the user's original query using 'Relation with your query:'."
         "Don't use more than 300 words in total."
         "Don't use markdown formatting."
         "Always start with a short introductory sentence, e.g., 'Here are some items related to your query:'."

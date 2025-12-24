@@ -72,6 +72,58 @@ class VectorStore:
             )
         return results
 
+    def filtered_similarity_search(
+        self, 
+        query_embedding: list[float], 
+        k: int = 5,
+        where: dict[str, Any] | None = None,
+    ) -> list[SearchResult]:
+        """
+        Search with optional metadata filters.
+        
+        Args:
+            query_embedding: The embedding vector to search with
+            k: Number of results to return
+            where: Chroma where filter dict. Examples:
+                   {"item_type": "book"}
+                   {"item_type": {"$eq": "book"}}
+                   {"year": {"$gte": 2020}}
+                   {"$and": [{"item_type": "book"}, {"year": {"$gte": 2020}}]}
+        
+        Returns:
+            List of SearchResult objects
+        """
+        res = self._collection.query(
+            query_embeddings=[query_embedding],
+            n_results=k,
+            where=where,
+            include=["documents", "metadatas", "distances"],
+        )
+
+        ids = res.get("ids") or [[]]
+        docs = res.get("documents") or [[]]
+        metas = res.get("metadatas") or [[]]
+        dists = res.get("distances") or [[]]
+
+        ids = ids[0] if ids else []
+        docs = docs[0] if docs else []
+        metas = metas[0] if metas else []
+        dists = dists[0] if dists else []
+
+        results: list[SearchResult] = []
+        for i in range(len(ids)):
+            dist = float(dists[i]) if i < len(dists) else 0.0
+            metadata = dict(metas[i]) if i < len(metas) and metas[i] is not None else None
+            results.append(
+                SearchResult(
+                    id=str(ids[i]),
+                    score=dist,
+                    document=docs[i] if i < len(docs) else None,
+                    metadata=metadata,
+                )
+            )
+        return results
+
 
 if __name__ == "__main__":
     from query_embedder import QueryEmbedder

@@ -1,0 +1,43 @@
+sequenceDiagram
+    autonumber
+
+    participant U as 👤 User
+    participant UI as Chat UI<br/>(chat_ui_cli.py / chat_ui_gradio.py)
+    participant ORCH as Chat Orchestrator<br/>(chat_orchestrator.py)
+    participant GATE as Clarify Gate (v2)<br/>(clarify_gate.py)
+    participant EMB as Query Embedder<br/>(query_embedder.py)
+    participant VDB as 🛢️ Chroma Vector Store<br/>(vector_store.py)
+    participant FMT as Results Formatter<br/>(results_formatter.py)
+    participant LLM as LLM Adapter<br/>(llm_adapter.py)
+
+    U->>UI: user message
+    UI->>ORCH: handle input
+
+    opt Clarify step (v2)
+        ORCH->>GATE: check sufficiency
+        alt needs info
+            GATE-->>ORCH: clarification needed
+            ORCH->>UI: clarification question
+            UI->>U: show question
+            U->>UI: clarification answer
+            UI->>ORCH: updated input
+        else enough info
+            GATE-->>ORCH: proceed
+        end
+    end
+
+    ORCH->>EMB: build query embedding
+    EMB->>LLM: improve_embedding_text(source_text)
+    LLM-->>EMB: embedding text
+    EMB-->>ORCH: embedded vector
+
+    ORCH->>VDB: similarity search (top-K)
+    VDB-->>ORCH: ranked items + scores
+
+    ORCH->>FMT: format response
+    FMT->>LLM: generate completion
+    LLM-->>FMT: formatted text
+
+    FMT-->>ORCH: formatted response
+    ORCH-->>UI: formatted response
+    UI-->>U: show recommendations

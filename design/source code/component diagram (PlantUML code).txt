@@ -1,0 +1,40 @@
+@startuml
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+' === Colors ===
+!define V1_COLOR #d7f7d7
+!define V2_COLOR #d6e8ff
+!define EXT_COLOR #fff3cd
+!define DATA_COLOR #eeeeee
+
+package "Chatbot Application (v1)" V1_COLOR {
+
+  [Chat UI\n(chat_ui_cli.py / chat_ui_gradio.py)] as UI
+  [Chat Orchestrator\n(chat_orchestrator.py)] as ORCH
+  [Results Formatter\n(results_formatter.py)] as FMT
+
+  UI -- ORCH
+  ORCH -- FMT
+}
+
+package "Optional Logic (v2)" V2_COLOR {
+  [Clarify Gate\n(clarify_gate.py)] as GATE
+  ORCH -- GATE
+}
+
+package "External Services" EXT_COLOR {
+  [LLM Adapter\n(llm_adapter.py)] as LLM
+  FMT -- LLM
+  GATE -- LLM
+}
+
+package "Data Layer" DATA_COLOR {
+  [Chroma Vector DB\n(vector_store.py)] as VDB
+  [Query Embedder\n(query_embedder.py)] as EMB
+  ORCH -- EMB
+  EMB -- LLM
+  ORCH -- VDB
+}
+
+@enduml

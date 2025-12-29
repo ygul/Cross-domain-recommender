@@ -1,0 +1,41 @@
+flowchart TB
+    U["👤 User"] <--> UI["Chat UI<br>(CLI / Gradio)"]
+    UI --> ORCH["Chat Orchestrator"]
+
+    ORCH --> GATE["Clarify Gate<br>(v2)<br>(max 1–2 questions)"]
+    ORCH --> EMB["Query Embedding<br>preferences → vector"]
+
+    %% Clarification loop
+    GATE -- needs info --> Q["Ask clarification<br>(v2)"]
+    Q --> UI
+
+    GATE -- enough info --> EMB
+
+    %% OpenAI adapter (shared dependency)
+    EMB <-->|embedding call| OA["OpenAI Adapter"]
+    FMT <-->|completion call| OA
+
+    EMB --> VDB[("Vector DB (CHROMA)<br>(shared embedding space)")]
+    VDB --> RET["Top-K Retrieval (K=5)"]
+
+    RET --> FMT["LLM response Formatter"]
+    FMT --> OUT["Response<br>Top-5 items + rationale"]
+    OUT --> UI
+
+    %% Styling
+    classDef v1 fill:#d7f7d7,stroke:#2e7d32,color:#111
+    classDef v2 fill:#d6e8ff,stroke:#1e5aa8,color:#111
+    classDef llm fill:#fff3cd,stroke:#f0ad4e,color:#111
+
+    U:::v1
+    UI:::v1
+    ORCH:::v1
+    EMB:::v1
+    VDB:::v1
+    RET:::v1
+    FMT:::v1
+    OUT:::v1
+
+    GATE:::v2
+    Q:::v2
+    OA:::llm

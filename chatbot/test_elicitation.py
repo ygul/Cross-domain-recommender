@@ -1,6 +1,6 @@
-# test_elicitation.py
 import chat_orchestrator
 from preference_elicitor_llm import PreferenceElicitorLLM
+from elicitation_logger import ElicitationLogger
 
 
 class ScriptedInput:
@@ -26,6 +26,9 @@ def main():
     orchestrator = chat_orchestrator.ChatOrchestrator(llm_provider="openai")
     elicitor = PreferenceElicitorLLM(llm=orchestrator.llm_adapter, max_questions=2)
 
+    # Logger for evaluation
+    logger = ElicitationLogger(base_dir="logs")
+
     tests = [
         {
             "label": "Expected 0 questions",
@@ -47,7 +50,7 @@ def main():
             "seed": "I’m looking for something engaging.",
             "answers": [
                 "Tense and suspenseful.",
-                "Character-driven rather than plot-driven, darker rather than uplifting, with less action and more emotional pressure."
+                "Character-driven rather than plot-driven, darker rather than uplifting, with less action and more emotional pressure.",
             ],
         },
     ]
@@ -61,6 +64,7 @@ def main():
 
         scripted_input = ScriptedInput(t["answers"])
 
+        # 1) Elicit preferences (0/1/2 questions)
         res = elicitor.run(t["seed"], input_fn=scripted_input, print_fn=print)
 
         print("\n[ELICITATION RESULT]")
@@ -74,6 +78,15 @@ def main():
         print("\nFinal query (sent to retrieval):")
         print(res.final_query)
 
+        # 2) Log elicitation session (CSV + JSONL)
+        logger.log(
+            user_seed=t["seed"],
+            turns=res.turns,
+            final_query=res.final_query,
+            item_types=None,  # tests are unfiltered
+        )
+
+        # 3) Run chatbot response
         print("\n[CHATBOT RESPONSE]")
         print("-" * 90)
         chatbot_output = orchestrator.run_once(res.final_query, item_types=None)
@@ -81,6 +94,8 @@ def main():
         print("-" * 90)
 
         print("=" * 90)
+
+    print("\nDone. Logs written under: logs/")
 
 
 if __name__ == "__main__":

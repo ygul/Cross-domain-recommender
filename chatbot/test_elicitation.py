@@ -15,11 +15,10 @@ class ScriptedInput:
 
     def __call__(self, prompt: str = "") -> str:
         if self.i >= len(self.answers):
-            # No more scripted answers; return empty to simulate "user declines"
             return ""
         ans = self.answers[self.i]
         self.i += 1
-        print(ans)  # echo it so logs show what was "typed"
+        print(ans)  # echo so logs show what was "typed"
         return ans
 
 
@@ -39,7 +38,6 @@ def main():
         {
             "label": "Expected 1 question",
             "seed": "I’m interested in stories that explore inner conflict.",
-            # Answer is intentionally concrete so A+B become clear after 1 Q
             "answers": [
                 "Mainly internal and psychological, and I want it to be darker rather than uplifting."
             ],
@@ -47,10 +45,9 @@ def main():
         {
             "label": "Expected 2 questions",
             "seed": "I’m looking for something engaging.",
-            # First answer gives A (focus). Second answer gives B (direction/constraint).
             "answers": [
-                "Character-driven and emotionally intense.",
-                "More intense and darker, with less action and more emotional pressure."
+                "Tense and suspenseful.",
+                "Character-driven rather than plot-driven, darker rather than uplifting, with less action and more emotional pressure."
             ],
         },
     ]
@@ -64,7 +61,6 @@ def main():
 
         scripted_input = ScriptedInput(t["answers"])
 
-        # Run elicitation with scripted answers
         res = elicitor.run(t["seed"], input_fn=scripted_input, print_fn=print)
 
         print("\n[ELICITATION RESULT]")

@@ -29,23 +29,52 @@ class ElicitationResult:
 SYSTEM_PROMPT = """
 You are a conversational preference elicitation assistant for a cross-domain recommender system.
 
-Goal:
-- Ask up to TWO clarification questions, only when needed, to create a strong semantic query for vector search.
-- The final output must be a single "final_query" that can be embedded for retrieval.
+Your job:
+- Decide whether the user's current information is sufficient to form a strong semantic search query.
+- If insufficient, ask up to TWO clarification questions (max 2 total).
+- If sufficient, stop immediately and return the final_query.
 
-Constraints:
+Hard constraints:
 - Never ask about specific titles, actors, directors, authors, popularity, ratings, or release years.
-- Avoid genre labels. Focus on experiential aspects: atmosphere, tone, themes, character dynamics, pacing, tension, emotional impact, worldview.
-- Keep questions short, concrete, and easy to answer.
+- Avoid genre labels. Focus on experiential preferences only:
+  atmosphere/tone, themes/ideas, character dynamics, pacing/energy, tension/conflict, emotional intensity, narrative focus.
 - Ask at most ONE question per turn.
 - Ask at most TWO questions total.
-
-Stopping guidance:
-- You MAY stop after one question if the user's answer provides sufficient information to generate a meaningful recommendation.
-- If uncertainty remains about narrative focus, tone, or direction, you SHOULD ask a second question (if remaining_questions > 0).
-
-Output format:
 - Output ONLY valid JSON. No markdown. No extra text.
+
+Sufficiency checklist:
+You may STOP (action="stop") if the inputs clearly provide BOTH:
+A) One dominant experiential preference (choose at least one):
+   - atmosphere/tone (quiet, tense, melancholic, hopeful, etc.)
+   - narrative focus (character-driven, world-driven, theme-driven, plot-driven)
+   - emotional intensity (restrained vs intense)
+   - pacing/energy (slow vs fast)
+   - type of conflict (internal vs external)
+AND
+B) One direction/constraint (choose at least one):
+   - more/less of something (more introspection, less action, etc.)
+   - similar vs contrasting direction
+   - an avoidance constraint (not lighthearted, not action-heavy, etc.)
+   - explicit emphasis (atmosphere over events, characters over plot, etc.)
+
+Question selection (very important):
+- Ask questions in order of what is missing.
+- If A is missing, ask a question that elicits A.
+- If A is already present in the seed/history (e.g., "inner conflict" already implies type of conflict),
+  then ask for B next (direction/constraint) rather than refining A.
+- After one answer, re-check A and B:
+  - If both are now clear, STOP (do not ask a second question).
+  - Only ask a second question if either A or B is still unclear AND remaining_questions > 0.
+
+Do not waste questions:
+- Do NOT ask about both pacing and intensity in two separate questions unless the user's first answer is vague
+  (e.g., "not sure", "either", "it depends").
+
+Question UX requirements:
+- Each question MUST include 2–4 short example options as bullet points.
+- You MUST explicitly state the options are only examples and the user may answer differently.
+- Use exactly this line before the bullets:
+  "Examples (feel free to answer differently):"
 
 JSON schema:
 {
@@ -55,13 +84,13 @@ JSON schema:
 }
 
 Meaning of fields:
-- action="ask": provide a single question, final_query must be null
+- action="ask": provide a single question (with examples), final_query must be null
 - action="stop": provide final_query, question must be null
 
 Final query requirements:
 - English
 - third person, present tense
-- compact, synopsis-like description
+- compact, synopsis-like description for vector search over plot synopses
 - preserve the user's intent and emotional tone exactly
 - do NOT introduce new entities, settings, themes, or plot facts not present in the user inputs
 """.strip()
@@ -79,8 +108,7 @@ def _build_user_prompt(user_seed: str, turns: List[Turn], remaining: int) -> str
         f"history:\n{history}\n\n"
         f"remaining_questions:\n{remaining}\n\n"
         "TASK\n"
-        "Decide whether to ask ONE more clarification question or stop.\n"
-        "Return JSON only.\n"
+        "Return JSON only. Decide ask vs stop using the sufficiency checklist and question selection rules.\n"
     )
 
 
@@ -88,30 +116,23 @@ def _build_user_prompt(user_seed: str, turns: List[Turn], remaining: int) -> str
 # JSON parsing helpers
 # ----------------------------
 def _safe_json_load(raw: str) -> Optional[dict]:
-    """
-    Try parsing JSON even if the model wrapped it in extra text.
-    Strategy:
-    1) direct json.loads
-    2) extract first {...} block via regex
-    """
     text = (raw or "").strip()
     if not text:
         return None
 
-    # 1) direct parse
+    # Direct parse
     try:
         return json.loads(text)
     except Exception:
         pass
 
-    # 2) extract a JSON object
+    # Extract JSON object
     m = re.search(r"\{.*\}", text, flags=re.DOTALL)
     if not m:
         return None
-    candidate = m.group(0).strip()
 
     try:
-        return json.loads(candidate)
+        return json.loads(m.group(0).strip())
     except Exception:
         return None
 
@@ -129,8 +150,10 @@ def _combined_text(user_seed: str, turns: List[Turn]) -> str:
 # ----------------------------
 class PreferenceElicitorLLM:
     """
-    Runs a short elicitation: up to 2 questions.
-    This variant leaves the decision entirely to the LLM (no heuristics/guardrails).
+    Elicitation that can ask 0, 1, or 2 questions depending on sufficiency.
+    Decision is LLM-driven (no heuristics). Prompt contains explicit rules to:
+    - ask what's missing first
+    - stop after 1 answer if A and B are satisfied
     """
 
     def __init__(self, llm: LLMAdapter, max_questions: int = 2) -> None:
@@ -151,8 +174,7 @@ class PreferenceElicitorLLM:
 
             # If LLM output fails: fallback immediately
             if decision is None:
-                final_query = self._fallback_final_query(user_seed, turns)
-                return ElicitationResult(final_query=final_query, turns=turns)
+                return ElicitationResult(final_query=self._fallback_final_query(user_seed, turns), turns=turns)
 
             action = decision.get("action")
             question = decision.get("question")
@@ -160,12 +182,12 @@ class PreferenceElicitorLLM:
 
             # Ask path
             if action == "ask" and remaining > 0 and isinstance(question, str) and question.strip():
-                q = question.strip()
+                q = self._ensure_examples_block(question.strip())
                 print_fn("\n" + q)
-                ans = (input_fn("> ") or "").strip()
 
-                # Empty answer => stop early
+                ans = (input_fn("> ") or "").strip()
                 if ans == "":
+                    # user declines -> stop with best available info
                     break
 
                 turns.append(Turn(question=q, answer=ans))
@@ -176,16 +198,39 @@ class PreferenceElicitorLLM:
             if action == "stop" and isinstance(final_query, str) and final_query.strip():
                 return ElicitationResult(final_query=final_query.strip(), turns=turns)
 
-            # Unexpected output or no remaining questions
+            # Unexpected output or out of questions -> finalize
             break
 
-        # If we exit without a valid final_query, synthesize it once from gathered text
         synthesized = self._llm_synthesize_final_query(user_seed, turns)
         if synthesized:
             return ElicitationResult(final_query=synthesized, turns=turns)
 
-        # Last resort fallback
         return ElicitationResult(final_query=self._fallback_final_query(user_seed, turns), turns=turns)
+
+    def _ensure_examples_block(self, text: str) -> str:
+        """
+        Ensure:
+        - exact disclaimer line
+        - bullets
+        If missing, append a compliant generic block.
+        """
+        t = text.strip()
+
+        has_examples_line = "examples (feel free to answer differently):" in t.lower()
+        has_bullets = ("\n- " in t) or ("\n• " in t) or ("\n* " in t)
+
+        if has_examples_line and has_bullets:
+            return t
+
+        suffix = ["Examples (feel free to answer differently):"]
+        if not has_bullets:
+            suffix.extend([
+                "- similar in tone and focus",
+                "- more intense or darker",
+                "- lighter or more hopeful",
+                "- slower and more contemplative",
+            ])
+        return t + "\n" + "\n".join(suffix)
 
     # ----------------------------
     # LLM calls
@@ -196,10 +241,6 @@ class PreferenceElicitorLLM:
         return _safe_json_load(raw)
 
     def _llm_synthesize_final_query(self, user_seed: str, turns: List[Turn]) -> Optional[str]:
-        """
-        One final call that outputs ONLY rewritten query text (not JSON).
-        Used when the stop decision was not properly returned as JSON.
-        """
         combined = _combined_text(user_seed, turns)
         system = (
             "You rewrite user preference text into a compact semantic query for vector search over plot synopses.\n"
@@ -216,7 +257,4 @@ class PreferenceElicitorLLM:
     # Fallback
     # ----------------------------
     def _fallback_final_query(self, user_seed: str, turns: List[Turn]) -> str:
-        """
-        Minimal safe fallback. Your QueryEmbedder may rewrite anyway.
-        """
         return _combined_text(user_seed, turns)

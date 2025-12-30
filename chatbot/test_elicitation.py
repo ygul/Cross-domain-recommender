@@ -1,0 +1,91 @@
+# test_elicitation.py
+import chat_orchestrator
+from preference_elicitor_llm import PreferenceElicitorLLM
+
+
+class ScriptedInput:
+    """
+    Supplies predefined answers for follow-up questions.
+    Falls back to empty string if answers run out.
+    """
+
+    def __init__(self, answers: list[str]) -> None:
+        self.answers = answers
+        self.i = 0
+
+    def __call__(self, prompt: str = "") -> str:
+        if self.i >= len(self.answers):
+            # No more scripted answers; return empty to simulate "user declines"
+            return ""
+        ans = self.answers[self.i]
+        self.i += 1
+        print(ans)  # echo it so logs show what was "typed"
+        return ans
+
+
+def main():
+    orchestrator = chat_orchestrator.ChatOrchestrator(llm_provider="openai")
+    elicitor = PreferenceElicitorLLM(llm=orchestrator.llm_adapter, max_questions=2)
+
+    tests = [
+        {
+            "label": "Expected 0 questions",
+            "seed": (
+                "I want a slow, introspective story focused on loneliness and inner reflection, "
+                "with a subdued and melancholic emotional tone, and less emphasis on action."
+            ),
+            "answers": [],
+        },
+        {
+            "label": "Expected 1 question",
+            "seed": "I’m interested in stories that explore inner conflict.",
+            # Answer is intentionally concrete so A+B become clear after 1 Q
+            "answers": [
+                "Mainly internal and psychological, and I want it to be darker rather than uplifting."
+            ],
+        },
+        {
+            "label": "Expected 2 questions",
+            "seed": "I’m looking for something engaging.",
+            # First answer gives A (focus). Second answer gives B (direction/constraint).
+            "answers": [
+                "Character-driven and emotionally intense.",
+                "More intense and darker, with less action and more emotional pressure."
+            ],
+        },
+    ]
+
+    for t in tests:
+        print("\n" + "=" * 90)
+        print(t["label"])
+        print("- Seed:")
+        print(t["seed"])
+        print("=" * 90)
+
+        scripted_input = ScriptedInput(t["answers"])
+
+        # Run elicitation with scripted answers
+        res = elicitor.run(t["seed"], input_fn=scripted_input, print_fn=print)
+
+        print("\n[ELICITATION RESULT]")
+        print(f"Questions asked: {len(res.turns)}")
+
+        if res.turns:
+            for i, turn in enumerate(res.turns, start=1):
+                print(f"\nQ{i}: {turn.question}")
+                print(f"A{i}: {turn.answer}")
+
+        print("\nFinal query (sent to retrieval):")
+        print(res.final_query)
+
+        print("\n[CHATBOT RESPONSE]")
+        print("-" * 90)
+        chatbot_output = orchestrator.run_once(res.final_query, item_types=None)
+        print(chatbot_output)
+        print("-" * 90)
+
+        print("=" * 90)
+
+
+if __name__ == "__main__":
+    main()

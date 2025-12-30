@@ -34,8 +34,8 @@ chatbot/
 
 1. **Create virtual environment**:
    ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   python -m venv .chatbot
+   source .chatbot/bin/activate  # On Windows: .chatbot\Scripts\activate
    ```
 
 2. **Install dependencies**:

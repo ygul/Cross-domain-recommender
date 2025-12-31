@@ -3,8 +3,6 @@
 A semantic search system that recommends books, TV series, and movies based on user queries.  
 Uses embeddings and vector similarity search to find relevant items across multiple domains.
 
-This project has been extended with **LLM-driven preference elicitation**, **explainable ranking using cosine distance**, and **reproducible evaluation via logging and test scripts**.
-
 ---
 
 ## Features

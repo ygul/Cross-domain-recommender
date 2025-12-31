@@ -1,6 +1,6 @@
+from __future__ import annotations
+
 import chat_orchestrator
-from preference_elicitor_llm import PreferenceElicitorLLM
-from elicitation_logger import ElicitationLogger
 
 
 class ScriptedInput:
@@ -23,11 +23,13 @@ class ScriptedInput:
 
 
 def main():
-    orchestrator = chat_orchestrator.ChatOrchestrator(llm_provider="openai")
-    elicitor = PreferenceElicitorLLM(llm=orchestrator.llm_adapter, max_questions=2)
-
-    # Logger for evaluation
-    logger = ElicitationLogger(base_dir="logs")
+    orchestrator = chat_orchestrator.ChatOrchestrator(
+        llm_provider="openai",
+        enable_clarify_gate=True,
+        clarify_max_questions=2,
+        enable_logging=True,
+        logs_dir="logs",
+    )
 
     tests = [
         {
@@ -64,38 +66,31 @@ def main():
 
         scripted_input = ScriptedInput(t["answers"])
 
-        # 1) Elicit preferences (0/1/2 questions)
-        res = elicitor.run(t["seed"], input_fn=scripted_input, print_fn=print)
-
-        print("\n[ELICITATION RESULT]")
-        print(f"Questions asked: {len(res.turns)}")
-
-        if res.turns:
-            for i, turn in enumerate(res.turns, start=1):
-                print(f"\nQ{i}: {turn.question}")
-                print(f"A{i}: {turn.answer}")
-
-        print("\nFinal query (sent to retrieval):")
-        print(res.final_query)
-
-        # 2) Log elicitation session (CSV + JSONL)
-        logger.log(
-            user_seed=t["seed"],
-            turns=res.turns,
-            final_query=res.final_query,
-            item_types=None,  # tests are unfiltered
+        # All logic in orchestrator
+        output, elicited = orchestrator.chat(
+            t["seed"],
+            item_types=None,
+            input_fn=scripted_input,
+            print_fn=print,
         )
 
-        # 3) Run chatbot response
+        print("\n[ELICITATION RESULT]")
+        if elicited is None:
+            print("ClarifyGate disabled or not used.")
+        else:
+            print(f"Questions asked: {len(elicited.turns)}")
+            for i, turn in enumerate(elicited.turns, start=1):
+                print(f"\nQ{i}: {turn.question}")
+                print(f"A{i}: {turn.answer}")
+            print("\nFinal query (sent to retrieval):")
+            print(elicited.final_query)
+
         print("\n[CHATBOT RESPONSE]")
         print("-" * 90)
-        chatbot_output = orchestrator.run_once(res.final_query, item_types=None)
-        print(chatbot_output)
+        print(output)
         print("-" * 90)
 
         print("=" * 90)
-
-    print("\nDone. Logs written under: logs/")
 
 
 if __name__ == "__main__":

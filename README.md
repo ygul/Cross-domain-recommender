@@ -11,10 +11,11 @@ Uses embeddings and vector similarity search to find relevant items across multi
   Uses sentence embeddings (via an LLM) to understand user intent beyond keyword matching.
 
 - **Multi-Domain Support**  
-  Search and filter across books, TV series, and movies.
+  Cross-domain search across books, TV series, and movies.  
+  Optional item-type filtering is available but disabled by default.
 
 - **Flexible Filtering**  
-  Optional filtering by item type(s) with OR logic.
+  Optional filtering by item type(s) with OR logic (feature-flagged in the CLI).
 
 - **LLM Integration**  
   Supports LLM-based query enhancement (OpenAI, extensible by design).
@@ -37,7 +38,19 @@ Uses embeddings and vector similarity search to find relevant items across multi
   All preference elicitation sessions are logged for analysis and reproducibility.
 
 - **CLI Interface**  
-  Interact via a command-line interface.
+  Thin command-line interface for interaction.
+
+---
+
+## Architecture Notes
+
+All conversational logic, including preference elicitation and the decision
+whether to ask follow-up questions, is centralized in the `ChatOrchestrator`.
+
+The CLI layer is intentionally kept thin and only handles input/output.
+This design enables loose coupling and allows alternative frontends
+(e.g. an LLM-as-a-judge module) to fully simulate the CLI by calling
+`ChatOrchestrator.chat(...)` directly.
 
 ---
 
@@ -45,9 +58,9 @@ Uses embeddings and vector similarity search to find relevant items across multi
 
 ```
 chatbot/
-├── chat_orchestrator.py       # Main orchestrator class
-├── chat_ui_cli.py             # CLI interface
-├── preference_elicitor_llm.py # LLM-driven preference elicitation
+├── chat_orchestrator.py       # Main orchestration logic (chat + elicitation + retrieval)
+├── chat_ui_cli.py             # Thin CLI interface (no chat logic)
+├── clarify_gate.py            # LLM-driven preference elicitation (Clarify Gate)
 ├── vector_store.py            # Vector database wrapper
 ├── query_embedder.py          # Embedding and query enhancement
 ├── llm_adapter.py             # LLM provider abstraction
@@ -113,24 +126,9 @@ The CLI will:
 ```python
 from chat_orchestrator import ChatOrchestrator
 
-# Initialize orchestrator
 orchestrator = ChatOrchestrator(llm_provider="openai", max_items=3)
 
-# Search without filters
 result = orchestrator.run_once("I want a good sci-fi book")
-
-# Search with item type filter(s)
-result = orchestrator.run_once(
-    "What should I watch?",
-    item_types={'movie', 'TV series'}
-)
-
-# Search with single type
-result = orchestrator.run_once(
-    "Recommend a book",
-    item_types={'Book'}
-)
-
 print(result)
 ```
 
@@ -165,53 +163,23 @@ Cosine distance values are explicitly shown and interpreted in the chatbot outpu
 
 ---
 
-## Vector Store API
-
-### `similarity_search(query_embedding, k=5)`
-Performs unfiltered semantic search across all items.
-
-### `filtered_similarity_search(query_embedding, k=5, where=None)`
-Performs semantic search with optional Chroma metadata filters.
-
-**Filter Examples**:
-```python
-# Single item type
-where = {"item_type": "Book"}
-
-# Multiple types (OR logic)
-where = {"$or": [
-    {"item_type": "Book"},
-    {"item_type": "movie"}
-]}
-
-# Complex filters
-where = {"$and": [
-    {"item_type": "Book"},
-    {"year": {"$gte": 2020}}
-]}
-```
-
----
-
 ## Testing & Evaluation
 
 ### Reproducible Elicitation Tests
-
-A dedicated test script is provided:
 
 ```bash
 python chatbot/test_elicitation.py
 ```
 
-This script runs predefined scenarios demonstrating:
+The test script demonstrates:
 - 0 follow-up questions
 - 1 follow-up question
 - 2 follow-up questions
 
 For each scenario, it outputs:
-- the questions asked and answers given,
+- asked questions and answers,
 - the final retrieval query,
-- the chatbot recommendations including cosine distance,
+- chatbot recommendations including cosine distance,
 - and logs the session to CSV and JSONL.
 
 ---
@@ -227,8 +195,6 @@ Each elicitation session is logged with:
 Logs are written to:
 - `logs/elicitation_log.csv`
 - `logs/elicitation_log.jsonl`
-
-These logs support evaluation and reproducibility.
 
 ---
 

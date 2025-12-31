@@ -1,67 +1,85 @@
+# chat_ui_cli.py
+from __future__ import annotations
+
 import chat_orchestrator
+from typing import Optional, Set, Literal
 
-from preference_elicitor_llm import PreferenceElicitorLLM
-from elicitation_logger import ElicitationLogger
+ItemType = Literal["Book", "TV series", "movie"]
+
+# ----------------------------------------
+# Feature flag: item-type filter in CLI
+# ----------------------------------------
+# False (default): user only provides a description; system searches cross-domain (ALL)
+# True: show B/S/M prompt to optionally filter retrieval by item type(s)
+ENABLE_TYPE_FILTER = False
 
 
-def _read_multiline(prompt: str, end_hint: str = "Paste your text, then finish with an empty line.") -> str:
+def _parse_item_type_filter(q: str) -> Optional[Set[ItemType]]:
     """
-    Reads multiple lines until an empty line is entered.
-    Prevents leftover pasted lines from being consumed by later input() calls.
+    User input: 'B', 'S', 'M' (any order, multiple allowed)
+    Returns: set of item types or None
     """
-    print(prompt)
-    print(f"({end_hint})")
-    lines = []
-    while True:
-        line = input("> ")
-        if line == "":
-            break
-        lines.append(line)
-    return "\n".join(lines).strip()
+    if not q:
+        return None
+
+    opts: set[ItemType] = set()
+    for ch in q.upper():
+        if ch == "B":
+            opts.add("Book")
+        elif ch == "S":
+            opts.add("TV series")
+        elif ch == "M":
+            opts.add("movie")
+
+    return opts if opts else None
 
 
 def main():
-    orchestrator = chat_orchestrator.ChatOrchestrator(llm_provider="openai")
-
-    # LLM generates up to 2 clarification questions + a final query (may stop after 1)
-    elicitor = PreferenceElicitorLLM(llm=orchestrator.llm_adapter, max_questions=2)
-
-    # Logger for evaluation
-    logger = ElicitationLogger(base_dir="logs")
+    orchestrator = chat_orchestrator.ChatOrchestrator(
+        llm_provider="openai",
+        enable_clarify_gate=True,
+        clarify_max_questions=2,
+        enable_logging=True,
+        logs_dir="logs",
+    )
 
     while True:
-        # Search across ALL item types by default
-        where_types = None
+        where_types: Optional[Set[ItemType]] = None
 
-        seed = _read_multiline(
-            "\nDescribe what you are looking for (or type 'exit'/'quit' to stop):",
-            end_hint="You may paste multiple lines. Press ENTER on an empty line to continue.",
-        )
+        # Optional item-type filtering (debug/feature flag)
+        if ENABLE_TYPE_FILTER:
+            print(
+                "\nPlease let me know if you're looking for a book, TV series, and/or movie "
+                "(type B, S, and/or M, multiple options are possible - ENTER for ALL):"
+            )
+            type_input = input("> ").strip()
+            where_types = _parse_item_type_filter(type_input)
 
-        seed_stripped = seed.strip()
-        if seed_stripped == "" or seed_stripped.lower() in {"exit", "quit"}:
+        print("\nPlease describe what you want (or 'exit' / ENTER to quit):")
+        seed = (input("> ") or "").strip()
+        if seed == "" or seed.lower() in {"exit", "quit"}:
             break
 
-        # 1) LLM asks up to 2 questions and returns a final query
-        elicited = elicitor.run(seed)
-        final_query = elicited.final_query
-
-        # DEBUG
-        print(f"\n[DEBUG] Elicitation turns used: {len(elicited.turns)}")
-        print(f"[DEBUG] Final query (sent to retrieval): {final_query}\n")
-
-        # 2) Log the elicitation session
-        logger.log(
-            user_seed=seed,
-            turns=elicited.turns,
-            final_query=final_query,
-            item_types=where_types,
-        )
-
-        # 3) Retrieval + formatting
         print("\nSearching for relevant items...\n")
         print("-" * 40)
-        print(orchestrator.run_once(final_query, item_types=where_types))
+
+        # Single entrypoint: all chat logic is in the orchestrator
+        output, elicited = orchestrator.chat(
+            seed,
+            item_types=where_types,
+            input_fn=input,
+            print_fn=print,
+        )
+        print(output)
+
+        # Optional debug visibility
+        if elicited is not None:
+            print("\n[DEBUG]")
+            print(f"Elicitation turns used: {len(elicited.turns)}")
+            print(f"Final query (sent to retrieval): {elicited.final_query}")
+            if ENABLE_TYPE_FILTER:
+                print(f"Item type filter: {sorted(where_types) if where_types else ['ALL']}")
+
         print("-" * 40)
 
 

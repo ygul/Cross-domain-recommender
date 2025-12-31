@@ -1,54 +1,102 @@
+from __future__ import annotations
+
+from typing import Literal, Optional, Tuple
 
 from query_embedder import QueryEmbedder
 from vector_store import VectorStore
 import llm_adapter
-from typing import Literal
 from results_formatter import format_results
 
+from clarify_gate import ClarifyGate, ElicitationResult
+from elicitation_logger import ElicitationLogger
+
+
+ItemType = Literal["Book", "TV series", "movie"]
+
+
 class ChatOrchestrator:
-    def __init__(self, llm_provider: Literal['openai', 'huggingface'] = "openai", max_items: int = 3) -> None:
+    def __init__(
+        self,
+        llm_provider: Literal["openai", "huggingface"] = "openai",
+        max_items: int = 3,
+        enable_clarify_gate: bool = True,
+        clarify_max_questions: int = 2,
+        enable_logging: bool = True,
+        logs_dir: str = "logs",
+    ) -> None:
         self.llm_adapter = llm_adapter.create_llm_adapter(provider=llm_provider)
         self.embedder = QueryEmbedder(llm_adapter=self.llm_adapter)
         self.vector_store = VectorStore()
         self.max_items = max_items
 
+        self.clarify_gate: Optional[ClarifyGate] = (
+            ClarifyGate(llm=self.llm_adapter, max_questions=clarify_max_questions)
+            if enable_clarify_gate
+            else None
+        )
+
+        self.logger: Optional[ElicitationLogger] = (
+            ElicitationLogger(base_dir=logs_dir) if enable_logging else None
+        )
+
     def run_once(
-        self, 
+        self,
         user_input: str,
-        item_types: set[Literal['Book', 'TV series', 'movie']] | None = None,
+        item_types: set[ItemType] | None = None,
     ) -> str:
         """
-        Process a single user input and return relevant items from the vector store.
-        
-        Args:
-            user_input: The user's query
-            item_types: Optional set of item types to filter by ('book', 'series', 'movie').
-                       If None, no filtering is applied.
-                       If multiple types are provided, they are combined with OR logic.
-        
-        Returns:
-            Formatted results as a string
+        Retrieve + format results for one query (no elicitation here).
         """
-        # Embed the user query
         embedding = self.embedder.embed(user_input)
-        
-        # Determine whether to use filtered or unfiltered search
+
         if item_types is None:
-            # No filtering
             results = self.vector_store.similarity_search(embedding, k=self.max_items)
         else:
-            # Build OR filter for multiple item types
-            where_filter = {
-                "$or": [{"item_type": item_type} for item_type in item_types]
-            } if len(item_types) > 1 else {"item_type": list(item_types)[0]}
-            
-            results = self.vector_store.filtered_similarity_search(
-                embedding, 
-                k=self.max_items,
-                where=where_filter
+            where_filter = (
+                {"$or": [{"item_type": item_type} for item_type in item_types]}
+                if len(item_types) > 1
+                else {"item_type": list(item_types)[0]}
             )
-        
-        # Format the results for user readability
-        formatted_output = format_results(user_input, results, self.llm_adapter)
-        return formatted_output
-        
+            results = self.vector_store.filtered_similarity_search(
+                embedding,
+                k=self.max_items,
+                where=where_filter,
+            )
+
+        return format_results(user_input, results, self.llm_adapter)
+
+    def chat(
+        self,
+        seed: str,
+        item_types: set[ItemType] | None = None,
+        input_fn=input,
+        print_fn=print,
+    ) -> Tuple[str, Optional[ElicitationResult]]:
+        """
+        Full chat flow (design-aligned):
+        seed -> optional ClarifyGate (0/1/2 questions) -> log -> retrieval+format
+
+        Returns:
+          (formatted_output, elicitation_result_or_None)
+        """
+        seed = (seed or "").strip()
+        if seed == "":
+            return "Empty input. Please provide a description of what you're looking for.", None
+
+        elicited: Optional[ElicitationResult] = None
+        final_query = seed
+
+        if self.clarify_gate is not None:
+            elicited = self.clarify_gate.run(seed, input_fn=input_fn, print_fn=print_fn)
+            final_query = elicited.final_query
+
+        if self.logger is not None:
+            self.logger.log(
+                user_seed=seed,
+                turns=[] if elicited is None else elicited.turns,
+                final_query=final_query,
+                item_types=item_types,
+            )
+
+        formatted = self.run_once(final_query, item_types=item_types)
+        return formatted, elicited

@@ -1,16 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional, Callable
+from typing import Callable, List, Optional
 import json
 import re
 
 from llm_adapter import LLMAdapter
 
 
-# ----------------------------
-# Data structures
-# ----------------------------
 @dataclass
 class Turn:
     question: str
@@ -23,9 +20,6 @@ class ElicitationResult:
     turns: List[Turn]
 
 
-# ----------------------------
-# Prompting
-# ----------------------------
 SYSTEM_PROMPT = """
 You are a conversational preference elicitation assistant for a cross-domain recommender system.
 
@@ -96,7 +90,7 @@ Final query requirements:
 """.strip()
 
 
-def _build_user_prompt(user_seed: str, turns: List[Turn], remaining: int) -> str:
+def _build_user_prompt(user_seed: str, turns: list[Turn], remaining: int) -> str:
     if turns:
         history = "\n\n".join([f"Q: {t.question}\nA: {t.answer}" for t in turns])
     else:
@@ -112,21 +106,16 @@ def _build_user_prompt(user_seed: str, turns: List[Turn], remaining: int) -> str
     )
 
 
-# ----------------------------
-# JSON parsing helpers
-# ----------------------------
 def _safe_json_load(raw: str) -> Optional[dict]:
     text = (raw or "").strip()
     if not text:
         return None
 
-    # Direct parse
     try:
         return json.loads(text)
     except Exception:
         pass
 
-    # Extract JSON object
     m = re.search(r"\{.*\}", text, flags=re.DOTALL)
     if not m:
         return None
@@ -137,23 +126,18 @@ def _safe_json_load(raw: str) -> Optional[dict]:
         return None
 
 
-def _combined_text(user_seed: str, turns: List[Turn]) -> str:
+def _combined_text(user_seed: str, turns: list[Turn]) -> str:
     parts = [user_seed.strip()]
-    for tr in turns:
-        if tr.answer:
-            parts.append(tr.answer.strip())
+    for t in turns:
+        if t.answer:
+            parts.append(t.answer.strip())
     return " ".join([p for p in parts if p]).strip()
 
 
-# ----------------------------
-# Main class
-# ----------------------------
-class PreferenceElicitorLLM:
+class ClarifyGate:
     """
-    Elicitation that can ask 0, 1, or 2 questions depending on sufficiency.
-    Decision is LLM-driven (no heuristics). Prompt contains explicit rules to:
-    - ask what's missing first
-    - stop after 1 answer if A and B are satisfied
+    Optional logic module (v2) that can ask 0, 1, or 2 questions.
+    All decisions are LLM-driven based on the prompt rules.
     """
 
     def __init__(self, llm: LLMAdapter, max_questions: int = 2) -> None:
@@ -166,41 +150,39 @@ class PreferenceElicitorLLM:
         input_fn: Callable[[str], str] = input,
         print_fn: Callable[[str], None] = print,
     ) -> ElicitationResult:
-        turns: List[Turn] = []
+        turns: list[Turn] = []
         remaining = self.max_questions
 
         while True:
             decision = self._llm_decide(user_seed=user_seed, turns=turns, remaining=remaining)
 
-            # If LLM output fails: fallback immediately
             if decision is None:
+                # fallback: no more clarification
                 return ElicitationResult(final_query=self._fallback_final_query(user_seed, turns), turns=turns)
 
             action = decision.get("action")
             question = decision.get("question")
             final_query = decision.get("final_query")
 
-            # Ask path
             if action == "ask" and remaining > 0 and isinstance(question, str) and question.strip():
                 q = self._ensure_examples_block(question.strip())
                 print_fn("\n" + q)
-
                 ans = (input_fn("> ") or "").strip()
+
                 if ans == "":
-                    # user declines -> stop with best available info
+                    # user declines further input -> stop
                     break
 
                 turns.append(Turn(question=q, answer=ans))
                 remaining -= 1
                 continue
 
-            # Stop path
             if action == "stop" and isinstance(final_query, str) and final_query.strip():
                 return ElicitationResult(final_query=final_query.strip(), turns=turns)
 
-            # Unexpected output or out of questions -> finalize
             break
 
+        # synthesize final query from seed + turns
         synthesized = self._llm_synthesize_final_query(user_seed, turns)
         if synthesized:
             return ElicitationResult(final_query=synthesized, turns=turns)
@@ -208,39 +190,28 @@ class PreferenceElicitorLLM:
         return ElicitationResult(final_query=self._fallback_final_query(user_seed, turns), turns=turns)
 
     def _ensure_examples_block(self, text: str) -> str:
-        """
-        Ensure:
-        - exact disclaimer line
-        - bullets
-        If missing, append a compliant generic block.
-        """
         t = text.strip()
-
         has_examples_line = "examples (feel free to answer differently):" in t.lower()
         has_bullets = ("\n- " in t) or ("\n• " in t) or ("\n* " in t)
 
         if has_examples_line and has_bullets:
             return t
 
-        suffix = ["Examples (feel free to answer differently):"]
-        if not has_bullets:
-            suffix.extend([
-                "- similar in tone and focus",
-                "- more intense or darker",
-                "- lighter or more hopeful",
-                "- slower and more contemplative",
-            ])
+        suffix = [
+            "Examples (feel free to answer differently):",
+            "- more introspective and subtle",
+            "- darker and heavier",
+            "- lighter and hopeful",
+            "- slower and contemplative",
+        ]
         return t + "\n" + "\n".join(suffix)
 
-    # ----------------------------
-    # LLM calls
-    # ----------------------------
-    def _llm_decide(self, user_seed: str, turns: List[Turn], remaining: int) -> Optional[dict]:
+    def _llm_decide(self, user_seed: str, turns: list[Turn], remaining: int) -> Optional[dict]:
         user_prompt = _build_user_prompt(user_seed, turns, remaining)
         raw = self.llm.generate(SYSTEM_PROMPT, user_prompt)
         return _safe_json_load(raw)
 
-    def _llm_synthesize_final_query(self, user_seed: str, turns: List[Turn]) -> Optional[str]:
+    def _llm_synthesize_final_query(self, user_seed: str, turns: list[Turn]) -> Optional[str]:
         combined = _combined_text(user_seed, turns)
         system = (
             "You rewrite user preference text into a compact semantic query for vector search over plot synopses.\n"
@@ -253,8 +224,5 @@ class PreferenceElicitorLLM:
         out = (self.llm.generate(system, combined) or "").strip()
         return out or None
 
-    # ----------------------------
-    # Fallback
-    # ----------------------------
-    def _fallback_final_query(self, user_seed: str, turns: List[Turn]) -> str:
+    def _fallback_final_query(self, user_seed: str, turns: list[Turn]) -> str:
         return _combined_text(user_seed, turns)

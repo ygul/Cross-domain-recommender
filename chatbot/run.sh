@@ -32,8 +32,18 @@ elif [ "$1" == "eval" ]; then
     echo "⚖️  Start Evaluatie (LLM Judge)..."
     python 3_evaluate_rag.py
 
+elif [ "$1" == "chat" ]; then
+    echo "💬 Start Chat Interface..."
+    # Gebruik winpty als het beschikbaar is (voorkomt vastlopen in Git Bash op Windows)
+    if command -v winpty &> /dev/null; then
+        winpty python chat_ui_cli.py
+    else
+        python chat_ui_cli.py
+    fi
+
 else
-    echo "Gebruik: ./run.sh [ingest|eval]"
+    echo "Gebruik: ./run.sh [ingest|eval|chat]"
     echo "  ingest : Database bouwen (script 1 & 2)"
     echo "  eval   : RAG Evaluatie draaien (script 3)"
+    echo "  chat   : Zelf praten met de bot (chat_ui_cli.py)"
 fi

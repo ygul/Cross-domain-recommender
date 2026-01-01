@@ -30,9 +30,16 @@ class ChatOrchestrator:
         logs_dir: str = "logs",
     ) -> None:
         self.llm_adapter = llm_adapter.create_llm_adapter(provider=llm_provider)
-        self.embedder = QueryEmbedder(llm_adapter=self.llm_adapter)
         self.vector_store = VectorStore()
         self.vector_store_alternative = VectorStore(use_alternative_collection=True)
+
+        def _build_embedder(store: VectorStore) -> QueryEmbedder:
+            meta = store._collection.metadata or {}
+            model_name = meta.get("embedding_model") or "paraphrase-multilingual-MiniLM-L12-v2"
+            return QueryEmbedder(model_name=model_name, llm_adapter=self.llm_adapter)
+
+        self.embedder_primary = _build_embedder(self.vector_store)
+        self.embedder_alternative = _build_embedder(self.vector_store_alternative)
         self.max_items = max_items
 
         self.clarify_gate: Optional[ClarifyGate] = (
@@ -54,9 +61,11 @@ class ChatOrchestrator:
         """
         Retrieve + format results for one query (no elicitation here).
         """
-        embedding = self.embedder.embed(user_input)
         effective_alt = bool(use_alternative_collection) if use_alternative_collection is not None else False
         store = self.vector_store_alternative if effective_alt else self.vector_store
+        embedder = self.embedder_alternative if effective_alt else self.embedder_primary
+
+        embedding = embedder.embed(user_input)
 
         if item_types is None:
             results = store.similarity_search(embedding, k=self.max_items)

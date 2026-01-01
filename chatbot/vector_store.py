@@ -152,23 +152,35 @@ if __name__ == "__main__":
     count_alt = vs_alt._collection.count()
     print(f"Loaded alternative collection with {count_alt} items.")
 
-    # Create an embedding, run similarity searches for both collections
-    embedder = QueryEmbedder()
+    import llm_adapter
+
+    # Create embedders per collection based on collection metadata
+    def build_embedders(store: VectorStore):
+        meta = store._collection.metadata or {}
+        model_name = meta.get("embedding_model") or "paraphrase-multilingual-MiniLM-L12-v2"
+        base_embedder = QueryEmbedder(model_name=model_name)
+        llm_emb = QueryEmbedder(
+            model_name=model_name,
+            llm_adapter=llm_adapter.create_llm_adapter(provider="openai"),
+        )
+        return model_name, base_embedder, llm_emb
+
+    primary_model_name, embedder, llm_embedder = build_embedders(vs)
+    alt_model_name, embedder_alt, llm_embedder_alt = build_embedders(vs_alt)
+
     query = "I want to see stuff about a space bounty hunter going on adventures. I would really like that."
     query = "I want something emotional about family, loss, and difficult choices, preferably not too light."
     print(f"Original query: {query}")
 
-    import llm_adapter
-    llm_embedder = QueryEmbedder(llm_adapter=llm_adapter.create_llm_adapter(provider="openai"))
     improved_query = llm_embedder.improve_query_with_llm(query)
-    print(f"Improved query: {improved_query}")
+    print(f"Improved query (primary model {primary_model_name}): {improved_query}")
 
-    def run_search(label: str, store: VectorStore) -> None:
+    def run_search(label: str, store: VectorStore, base_emb: QueryEmbedder, llm_emb: QueryEmbedder, model_name: str) -> None:
         print("----------------------------------------------------------------------------------------------------------------------------------------------------------------")
-        print(f"Searching in collection: {label}")
+        print(f"Searching in collection: {label} (embedding model: {model_name})")
 
         # Original query
-        query_embedding = embedder.embed(query)
+        query_embedding = base_emb.embed(query)
         results = store.similarity_search(query_embedding, k=3)
         print("-- Results for original query --")
         for r in results:
@@ -180,7 +192,7 @@ if __name__ == "__main__":
         print()
 
         # Improved query
-        improved_query_embedding = llm_embedder.embed(improved_query)
+        improved_query_embedding = llm_emb.embed(improved_query)
         improved_results = store.similarity_search(improved_query_embedding, k=3)
         print("-- Results for improved query --")
         for r in improved_results:
@@ -191,5 +203,5 @@ if __name__ == "__main__":
             print(f"- ID: {r.id}, Name: {name}, Score: {r.score}")
         print()
 
-    run_search(f"primary ({COLLECTION_NAME})", vs)
-    run_search(f"alternative ({COLLECTION_NAME_MODEL2})", vs_alt)
+    run_search(f"primary ({COLLECTION_NAME})", vs, embedder, llm_embedder, primary_model_name)
+    run_search(f"alternative ({COLLECTION_NAME_MODEL2})", vs_alt, embedder_alt, llm_embedder_alt, alt_model_name)

@@ -23,42 +23,50 @@ print(f"Chroma DB root: {DB_ROOT}")
 # Database connect
 # -------------------------------------------------
 client = chromadb.PersistentClient(path=str(DB_ROOT))
-collection_name = config["BESTANDEN"]["collectie_naam"]
 
-collection = client.get_collection(name=collection_name)
-count = collection.count()
+# Haal alle collecties op
+collections = client.list_collections()
 
-if count == 0:
-    raise RuntimeError("Collectie is leeg")
+if not collections:
+    raise RuntimeError("Geen collecties gevonden in de database")
 
-print(f"✔ Aantal vectors: {count}")
+print(f"✔ Aantal collecties: {len(collections)}")
 
 # -------------------------------------------------
-# Visualisatie
+# Visualisatie per collectie
 # -------------------------------------------------
-result = collection.get(include=["embeddings", "metadatas"])
-embeddings = np.array(result["embeddings"])
-metadatas = result["metadatas"]
+for collection in collections:
+    count = collection.count()
+    
+    if count == 0:
+        print(f"⚠ Collectie '{collection.name}' is leeg, overslaan...")
+        continue
+    
+    embedding_model = collection.metadata.get("embedding_model", "UNKNOWN")
+    print(f"\n📊 Visualiseren: '{collection.name}' ({embedding_model}) - {count} vectors")
+    
+    result = collection.get(include=["embeddings", "metadatas"])
+    embeddings = np.array(result["embeddings"])
+    metadatas = result["metadatas"]
+    
+    pca = PCA(n_components=2)
+    coords = pca.fit_transform(embeddings)
+    
+    labels = [m.get("Simplified genre", "Onbekend") for m in metadatas]
+    unique = sorted(set(labels))
+    colors = [unique.index(l) for l in labels]
+    
+    plt.figure(figsize=(10, 8))
+    scatter = plt.scatter(coords[:, 0], coords[:, 1], c=colors, cmap="tab10", alpha=0.7)
+    handles, _ = scatter.legend_elements()
+    plt.legend(handles, unique, title="Genre", bbox_to_anchor=(1, 1))
+    plt.title(f"Chroma DB – PCA visualisatie\nCollectie: {collection.name}\nEmbedding model: {embedding_model}")
+    plt.grid(True)
+    plt.tight_layout()
+    
+    filename = f"visualisatie_{collection.name}.png"
+    plt.savefig(filename)
+    print(f"✔ {filename} opgeslagen")
+    plt.close()
 
-pca = PCA(n_components=2)
-coords = pca.fit_transform(embeddings)
-
-labels = [m.get("Simplified genre", "Onbekend") for m in metadatas]
-unique = sorted(set(labels))
-colors = [unique.index(l) for l in labels]
-
-plt.figure(figsize=(10, 8))
-scatter = plt.scatter(coords[:, 0], coords[:, 1], c=colors, cmap="tab10", alpha=0.7)
-handles, _ = scatter.legend_elements()
-plt.legend(handles, unique, title="Genre", bbox_to_anchor=(1, 1))
-plt.title("Chroma DB – PCA visualisatie")
-plt.grid(True)
-plt.tight_layout()
-
-plt.savefig("visualisatie.png")
-print("visualisatie.png opgeslagen")
-
-try:
-    plt.show()
-except Exception:
-    pass
+print("\n✔ Alle visualisaties aangemaakt")

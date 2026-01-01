@@ -5,6 +5,7 @@ import requests
 import pandas as pd
 import chromadb
 from chromadb.utils import embedding_functions
+import shutil
 
 # -------------------------------------------------
 # Config & paden
@@ -50,8 +51,13 @@ df = df[df[text_col].apply(lambda x: isinstance(x, str) and x.strip() != "")]
 print(f"Aantal geldige rijen: {len(df)}")
 
 # -------------------------------------------------
-# Chroma setup (NOOIT nieuwe map maken)
+# Chroma setup - Verwijder oude database
 # -------------------------------------------------
+if DB_ROOT.exists():
+    print(f"🗑️ Verwijderen oude database: {DB_ROOT}")
+    shutil.rmtree(DB_ROOT)
+
+print(f"📦 Aanmaken nieuwe database: {DB_ROOT}")
 client = chromadb.PersistentClient(path=str(DB_ROOT))
 
 ef = embedding_functions.SentenceTransformerEmbeddingFunction(
@@ -61,10 +67,11 @@ ef = embedding_functions.SentenceTransformerEmbeddingFunction(
 collection_name = config["BESTANDEN"]["collectie_naam"]
 collection = client.get_or_create_collection(
     name=collection_name,
-    embedding_function=ef
-)
-collection.modify(
-    metadata={"embedding_model": ef.model_name}
+    embedding_function=ef,
+    metadata={
+        "hnsw:space": "cosine",
+        "embedding_model": ef.model_name
+    }
 )
 
 # Voor een tweede model
@@ -75,10 +82,11 @@ ef2 = embedding_functions.SentenceTransformerEmbeddingFunction(
 collection_name_model2 = config["BESTANDEN"]["collectie_naam_model2"]
 collection_model2 = client.get_or_create_collection(
     name=collection_name_model2,
-    embedding_function=ef2
-)
-collection_model2.modify(
-    metadata={"embedding_model": ef2.model_name}
+    embedding_function=ef2,
+    metadata={
+        "hnsw:space": "cosine",
+        "embedding_model": ef2.model_name
+    }
 )
 
 # -------------------------------------------------

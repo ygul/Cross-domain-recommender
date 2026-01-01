@@ -12,6 +12,7 @@ ItemType = Literal["Book", "TV series", "movie"]
 # False (default): user only provides a description; system searches cross-domain (ALL)
 # True: show B/S/M prompt to optionally filter retrieval by item type(s)
 ENABLE_TYPE_FILTER = False
+PRINT_SUGGESTION_FROM_ALTERNATIVE_COLLECTION = True
 
 
 def _parse_item_type_filter(q: str) -> Optional[Set[ItemType]]:
@@ -69,8 +70,25 @@ def main():
             item_types=where_types,
             input_fn=input,
             print_fn=print,
+            use_alternative_collection=False,
         )
         print(output)
+
+        if PRINT_SUGGESTION_FROM_ALTERNATIVE_COLLECTION:
+            alt_query = seed
+            if elicited is not None and getattr(elicited, "final_query", None):
+                alt_query = elicited.final_query
+
+            print("\n" + "=" * 70)
+            print("ALTERNATIVE COLLECTION SUGGESTION")
+            print("=" * 70)
+            alt_output = orchestrator.run_once(
+                alt_query,
+                item_types=where_types,
+                use_alternative_collection=True,
+            )
+            print(alt_output)
+            print("=" * 70 + "\n")
 
         # Optional debug visibility
         if elicited is not None:

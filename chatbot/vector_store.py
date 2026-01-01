@@ -21,7 +21,7 @@ if not read_ok:
 
 DB_ROOT = (BASE_DIR / config["BESTANDEN"]["database_mapnaam"]).resolve()
 COLLECTION_NAME = config["BESTANDEN"]["collectie_naam"]
-
+COLLECTION_NAME_MODEL2 = config["BESTANDEN"]["collectie_naam_model2"]
 
 # -------------------------------------------------
 # Vector store
@@ -35,11 +35,22 @@ class SearchResult:
 
 
 class VectorStore:
-    def __init__(self, db_root: Path | None = None, collection_name: str | None = None) -> None:
+    def __init__(
+        self,
+        db_root: Path | None = None,
+        collection_name: str | None = None,
+        use_alternative_collection: bool = False,
+    ) -> None:
+        if use_alternative_collection and collection_name:
+            raise AssertionError("If use_alternative_collection is True, collection_name must be None or empty")
+
         db_root = db_root or DB_ROOT
-        collection_name = collection_name or COLLECTION_NAME
+        resolved_collection = (
+            COLLECTION_NAME_MODEL2 if use_alternative_collection else (collection_name or COLLECTION_NAME)
+        )
+
         self._client = chromadb.PersistentClient(path=str(db_root))
-        self._collection = self._client.get_collection(name=collection_name)
+        self._collection = self._client.get_collection(name=resolved_collection)
 
     def similarity_search(self, query_embedding: list[float], k: int = 5) -> list[SearchResult]:
         res = self._collection.query(
@@ -128,34 +139,57 @@ class VectorStore:
 if __name__ == "__main__":
     from query_embedder import QueryEmbedder
 
-    # Smoke test: does the collection load?
+    # Smoke test: primary collection
     print(f"Chroma DB root: {DB_ROOT}")
-    print(f"Collection: {COLLECTION_NAME}")
+    print(f"Collection (primary): {COLLECTION_NAME}")
     vs = VectorStore(DB_ROOT, COLLECTION_NAME)
     count = vs._collection.count()
-    print(f"Loaded collection with {count} items.")
+    print(f"Loaded primary collection with {count} items.")
 
-    # Create an embedding, run a similarity search and print results
+    # Smoke test: alternative collection
+    print(f"Collection (alternative): {COLLECTION_NAME_MODEL2}")
+    vs_alt = VectorStore(DB_ROOT, None, use_alternative_collection=True)
+    count_alt = vs_alt._collection.count()
+    print(f"Loaded alternative collection with {count_alt} items.")
+
+    # Create an embedding, run similarity searches for both collections
     embedder = QueryEmbedder()
     query = "I want to see stuff about a space bounty hunter going on adventures. I would really like that."
     query = "I want something emotional about family, loss, and difficult choices, preferably not too light."
     print(f"Original query: {query}")
-    print("----------------------------------------------------------------------------------------------------------------------------------------------------------------")
 
-    query_embedding = embedder.embed(query)
-    results = vs.similarity_search(query_embedding, k=3)
-    for r in results:
-        print(f"- ID: {r.id}, Score: {r.score}, Metadata: {r.metadata}")
-        print()
-
-    # Now do the same but with LLM-improved query
     import llm_adapter
     llm_embedder = QueryEmbedder(llm_adapter=llm_adapter.create_llm_adapter(provider="openai"))
     improved_query = llm_embedder.improve_query_with_llm(query)
-    improved_query_embedding = llm_embedder.embed(query)
-    improved_results = vs.similarity_search(improved_query_embedding, k=3)
-    print(f"Results for improved query: {improved_query}")
-    print("----------------------------------------------------------------------------------------------------------------------------------------------------------------")
-    for r in improved_results:
-        print(f"- ID: {r.id}, Score: {r.score}, Metadata: {r.metadata}")
+    print(f"Improved query: {improved_query}")
+
+    def run_search(label: str, store: VectorStore) -> None:
+        print("----------------------------------------------------------------------------------------------------------------------------------------------------------------")
+        print(f"Searching in collection: {label}")
+
+        # Original query
+        query_embedding = embedder.embed(query)
+        results = store.similarity_search(query_embedding, k=3)
+        print("-- Results for original query --")
+        for r in results:
+            name = None
+            if r.metadata:
+                name = r.metadata.get("name") or r.metadata.get("title") or r.metadata.get("Title")
+            name = name or "(no name)"
+            print(f"- ID: {r.id}, Name: {name}, Score: {r.score}")
         print()
+
+        # Improved query
+        improved_query_embedding = llm_embedder.embed(improved_query)
+        improved_results = store.similarity_search(improved_query_embedding, k=3)
+        print("-- Results for improved query --")
+        for r in improved_results:
+            name = None
+            if r.metadata:
+                name = r.metadata.get("name") or r.metadata.get("title") or r.metadata.get("Title")
+            name = name or "(no name)"
+            print(f"- ID: {r.id}, Name: {name}, Score: {r.score}")
+        print()
+
+    run_search(f"primary ({COLLECTION_NAME})", vs)
+    run_search(f"alternative ({COLLECTION_NAME_MODEL2})", vs_alt)

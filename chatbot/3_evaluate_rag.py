@@ -10,6 +10,7 @@ from huggingface_hub import InferenceClient
 
 import chat_orchestrator
 from preference_elicitor_llm import PreferenceElicitorLLM
+from query_embedder import QueryEmbedder
 
 ## Setup ####################################################################################################################################################
 #
@@ -27,7 +28,12 @@ client_judge = InferenceClient(token=HF_TOKEN)
 
 # System-to-test setup
 print("Initializing Chat Orchestrator")
+# 1. Deze regel MOET er staan (anders krijg je NameError: orchestrator not defined)
 orchestrator = chat_orchestrator.ChatOrchestrator(llm_provider="openai", max_items=3)
+
+# 2. Deze regel heb je net toegevoegd voor de embedder fix
+print("Initializing Independent Embedder")
+test_embedder = QueryEmbedder(model_name=config["AI"]["model_embedding"])
 
 ## Test Data #################################################################################################################################################
 #
@@ -219,7 +225,7 @@ for scenario in TEST_SCENARIOS:
     baseline_output = orchestrator.run_once(scenario['seed'])
     
     # Context
-    emb = orchestrator.embedder.embed(scenario['seed'])
+    emb = test_embedder.embed(scenario['seed'])
     raw_results = orchestrator.vector_store.similarity_search(emb, k=3)
     context_text = "\n".join([r.document for r in raw_results if r.document])
     
@@ -250,7 +256,7 @@ for scenario in TEST_SCENARIOS:
     
     final_output = orchestrator.run_once(final_query)
     
-    emb_final = orchestrator.embedder.embed(final_query)
+    emb_final = test_embedder.embed(final_query)
     raw_results_final = orchestrator.vector_store.similarity_search(emb_final, k=3)
     context_text_final = "\n".join([r.document for r in raw_results_final if r.document])
 

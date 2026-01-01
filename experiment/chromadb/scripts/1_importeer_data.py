@@ -63,6 +63,23 @@ collection = client.get_or_create_collection(
     name=collection_name,
     embedding_function=ef
 )
+collection.modify(
+    metadata={"embedding_model": ef.model_name}
+)
+
+# Voor een tweede model
+ef2 = embedding_functions.SentenceTransformerEmbeddingFunction(
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
+)
+
+collection_name_model2 = config["BESTANDEN"]["collectie_naam_model2"]
+collection_model2 = client.get_or_create_collection(
+    name=collection_name_model2,
+    embedding_function=ef2
+)
+collection_model2.modify(
+    metadata={"embedding_model": ef2.model_name}
+)
 
 # -------------------------------------------------
 # Upsert data
@@ -73,7 +90,7 @@ ids = df[id_col].tolist()
 df[meta_cols] = df[meta_cols].fillna("")
 metadatas = df[meta_cols].to_dict(orient="records")
 
-print("Vectoriseren & opslaan...")
+print("Vectoriseren & opslaan - model 1...")
 collection.upsert(
     documents=documents,
     metadatas=metadatas,
@@ -81,3 +98,24 @@ collection.upsert(
 )
 
 print(f"Klaar. Collectie '{collection_name}' bevat nu {collection.count()} items")
+
+# -------------------------------------------------
+# Upsert data for second model
+# -------------------------------------------------
+print("Vectoriseren & opslaan - model 2...")
+collection_model2.upsert(
+    documents=documents,
+    metadatas=metadatas,
+    ids=ids
+)
+
+print(f"Klaar. Collectie '{collection_name_model2}' bevat nu {collection_model2.count()} items")
+
+# -------------------------------------------------
+# Test: ophalen van de modelnamen uit de vector store
+# -------------------------------------------------
+print("\nBeschikbare embedding modellen in de collectie:")
+collections = client.list_collections()
+for col in collections:
+    embedding_model = col.metadata.get("embedding_model", "UNKNOWN")
+    print(f"- Collectie '{col.name}': model '{embedding_model}'")

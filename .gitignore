@@ -3,6 +3,8 @@ __pycache__/
 /.idea/
 /.vscode/
 /.venv/
+/logs/
+/*.png
 /experiment/data/
 /experiment/chromadb/chromadb/
 /experiment/chromadb/data/

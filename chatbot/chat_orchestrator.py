@@ -95,6 +95,13 @@ class ChatOrchestrator:
         Full chat flow (design-aligned):
         seed -> optional ClarifyGate (0/1/2 questions) -> log -> retrieval+format
 
+        Args:
+            seed: User input text
+            item_types: Optional item-type filter
+            input_fn, print_fn: I/O hooks for CLI
+            use_alternative_collection: Per-call override; True queries the alternative collection/model,
+                False the primary; None uses the primary collection/model by default.
+
         Returns:
           (formatted_output, elicitation_result_or_None)
         """

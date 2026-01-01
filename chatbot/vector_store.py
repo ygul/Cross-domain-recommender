@@ -170,6 +170,13 @@ if __name__ == "__main__":
 
     query = "I want to see stuff about a space bounty hunter going on adventures. I would really like that."
     query = "I want something emotional about family, loss, and difficult choices, preferably not too light."
+    
+    # Short description of The Mandalorian
+    query = "After the fall of the Galactic Empire, lawlessness has spread throughout the galaxy. A lone gunfighter makes his way through the outer reaches, earning his keep as a bounty hunter."
+
+    # Long description of The Mandalorian (used for the actual embedding, so distance should be zero for both models/collections)
+    query = """In a galaxy still reeling from the collapse of the Galactic Empire, chaos reigns across the outer reaches, where lawlessness has become a way of life. Amidst the remnants of a once-mighty regime, a solitary gunfighter navigates the treacherous landscape as a bounty hunter, forging a path through a universe filled with danger and intrigue. Each mission presents not only a test of skill but also a moral quandary, as the line between right and wrong blurs in a world where survival often comes at a steep price. As he traverses desolate planets and bustling spaceports, the bounty hunter encounters a diverse array of characters—some allies, others adversaries—each with their own agendas and secrets. The weight of his past looms large, shaping his choices and challenging his resolve. In this unforgiving environment, the hunter must grapple with themes of identity, loyalty, and the quest for redemption, all while evading the shadows of his own making. The atmosphere is thick with tension, as the hunter's journey unfolds against a backdrop of stunning vistas and gritty underbellies, where every corner turned could lead to fortune or peril. With each encounter, the stakes rise, and the hunter's resolve is tested, forcing him to confront not only the dangers of the galaxy but also the deeper conflicts within himself. In this relentless pursuit of purpose, the hunter discovers that sometimes, the greatest battles are fought not against others, but within one's own soul."""    
+
     print(f"Original query: {query}")
 
     improved_query = llm_embedder.improve_query_with_llm(query)
@@ -188,7 +195,7 @@ if __name__ == "__main__":
             if r.metadata:
                 name = r.metadata.get("name") or r.metadata.get("title") or r.metadata.get("Title")
             name = name or "(no name)"
-            print(f"- ID: {r.id}, Name: {name}, Score: {r.score}")
+            print(f"- ID: {r.id}, Name: {name}, Score: {r.score:.4f}")
         print()
 
         # Improved query
@@ -200,7 +207,7 @@ if __name__ == "__main__":
             if r.metadata:
                 name = r.metadata.get("name") or r.metadata.get("title") or r.metadata.get("Title")
             name = name or "(no name)"
-            print(f"- ID: {r.id}, Name: {name}, Score: {r.score}")
+            print(f"- ID: {r.id}, Name: {name}, Score: {r.score:.4f}")
         print()
 
     run_search(f"primary ({COLLECTION_NAME})", vs, embedder, llm_embedder, primary_model_name)

@@ -1,1 +1,79 @@
 session_id,timestamp_utc,user_seed,question_1,answer_1,question_2,answer_2,final_query,item_types
+5e3f0588-088d-4d31-a3c1-7c12850f1741,2026-01-02T09:03:49.489391,I want a psychological thriller.,"What kind of atmosphere or tone are you looking for in this psychological thriller? For example, it could be: 
+- tense 
+- dark 
+- unsettling 
+- thought-provoking 
+Examples (feel free to answer differently):",I'm drawn to stories that explore deep psychological themes and the darkness of isolation. I prefer narratives that evoke a sense of creeping dread and are set in more classic or timeless settings.,,,"A psychological thriller that explores deep psychological themes and the darkness of isolation, evoking a sense of creeping dread in classic or timeless settings.",ALL
+dc4cef0d-1f2a-4cd6-971a-a7dd94f6e3f8,2026-01-02T09:05:03.517290,Recommend something funny about work.,"What kind of humor do you prefer? For example, do you enjoy: 
+- Sarcastic or dry humor 
+- Slapstick or physical comedy 
+- Satirical or witty commentary 
+- Light-hearted or silly jokes 
+Examples (feel free to answer differently):","I enjoy humor that highlights the absurdities of corporate life and the awkwardness of everyday interactions. A mockumentary style really resonates with me, as it adds a unique layer to the storytelling.",,,The user seeks a mockumentary that humorously explores the absurdities of corporate life and the awkwardness of everyday interactions.,ALL
+7a6b788e-c01b-4d3a-a1f0-4d8c259098a8,2026-01-02T09:06:08.371526,I want a dark story about technology.,"What kind of emotional intensity are you looking for in this dark story? Should it be more restrained or intense?
+Examples (feel free to answer differently):
+- more introspective and subtle
+- darker and heavier
+- lighter and hopeful
+- slower and contemplative","I enjoy stories that explore the darker side of technology and its impact on society, especially those that provoke deep thought and reflection. I'm drawn to narratives that unfold slowly and encourage philosophical contemplation rather than fast-paced action.",,,"The user seeks a dark story that explores the darker side of technology and its impact on society, characterized by slow pacing that encourages deep thought and philosophical contemplation.",ALL
+943a30d7-0cbd-4797-828a-eb97db67a3fa,2026-01-02T09:07:20.794623,Stories about survival competitions.,"What kind of atmosphere or tone are you looking for in these stories? For example, do you prefer a tense, high-stakes environment, or something more introspective and reflective? 
+Examples (feel free to answer differently):
+- tense
+- melancholic
+- hopeful
+- gritty","I'm drawn to stories that explore the depths of psychological trauma and the darker aspects of survival. I appreciate narratives that challenge characters in intense, thought-provoking ways.","What kind of direction or constraint do you prefer for these narratives? For example, do you want more focus on character development, less action, or perhaps an avoidance of lighthearted themes? 
+Examples (feel free to answer differently):
+- more character introspection
+- less action-driven plots
+- avoidance of humor
+- emphasis on psychological conflict",I'm drawn to stories that explore the depths of human psychology and the impact of survival in brutal environments. I'm looking for something that delves into darker themes and the emotional aftermath of such experiences.,"Stories about survival competitions that explore psychological trauma and darker themes, focusing on the emotional aftermath and human psychology in brutal environments.",ALL
+a70ff2a6-051a-4e4b-b6ae-3496857bb6a4,2026-01-02T09:08:20.414119,I am looking for a love story.,"What kind of emotional tone are you looking for in this love story? For example, are you interested in something: 
+- melancholic 
+- hopeful 
+- passionate 
+- bittersweet 
+Examples (feel free to answer differently):","I'm drawn to stories that explore the complexities of love and the raw emotions that come with it. I prefer narratives that are more realistic and poignant, rather than light-hearted or comedic.",,,"User seeks a love story that explores the complexities of love with realistic and poignant narratives, focusing on raw emotions.",ALL
+8d6922c5-4d7a-4d37-8102-e9eeb1700a69,2026-01-02T09:09:23.435094,Something with space travel.,"What kind of atmosphere or tone do you prefer in a story about space travel? For example, would you like it to be: 
+- adventurous and thrilling 
+- melancholic and introspective 
+- hopeful and inspiring 
+- dark and tense? 
+Examples (feel free to answer differently):",I'm drawn to stories that delve into intricate political dynamics and the moral complexities of war in a space setting. I appreciate narratives that explore the depth of factional conflicts rather than just focusing on action.,,,"The user seeks a space travel narrative that explores intricate political dynamics and the moral complexities of war, focusing on the depth of factional conflicts rather than action.",ALL
+59e2dafe-98f7-40a1-af54-1024445586d7,2026-01-02T09:10:25.180968,A mystery story.,"What kind of atmosphere or tone do you prefer in the mystery story? For example, should it be tense, dark, suspenseful, or perhaps more lighthearted? Examples (feel free to answer differently):
+- tense
+- dark
+- suspenseful
+- lighthearted","I enjoy stories that have a warm, inviting atmosphere, often set in quaint villages or charming old homes. I'm looking for something that emphasizes clever puzzle solving rather than intense crime drama.","What kind of narrative focus do you prefer in the mystery story? For example, should it be more character-driven, theme-driven, or plot-driven? Examples (feel free to answer differently):
+Examples (feel free to answer differently):
+- more introspective and subtle
+- darker and heavier
+- lighter and hopeful
+- slower and contemplative","I enjoy stories that have a warm, inviting atmosphere and involve clever puzzles to solve. I'm looking for something that captures the charm of a small village or an old house without the intensity of violence.","The story features a warm, inviting atmosphere set in a quaint village or charming old home, focusing on clever puzzle solving rather than intense crime drama, with an emphasis on character-driven narratives.",ALL
+7ed4b0bb-7e44-4bdc-bad0-73716171f423,2026-01-02T09:11:35.224129,I like stories with magic.,"What kind of atmosphere or tone do you prefer in stories with magic? For example, do you enjoy: 
+- a whimsical and lighthearted tone 
+- a dark and mysterious atmosphere 
+- a serious and epic feel 
+- a melancholic or reflective mood? 
+Examples (feel free to answer differently):","I enjoy stories where magic feels woven into the fabric of reality, creating a sense of wonder and intrigue without overwhelming the everyday world. I appreciate narratives that leave some mysteries unexplained, allowing for a deeper emotional connection.",,,"The user enjoys stories where magic is woven into the fabric of reality, creating a sense of wonder and intrigue while leaving some mysteries unexplained, fostering a deeper emotional connection.",ALL
+fde796e1-06c1-4b20-8f4b-4f5db9d9313b,2026-01-02T09:12:38.963649,I want to watch something historical.,"What kind of atmosphere or tone are you looking for in this historical content? For example, do you prefer something: 
+- serious and dramatic 
+- light and humorous 
+- dark and intense 
+- reflective and melancholic 
+Examples (feel free to answer differently):","I'm really drawn to stories that transport me to a different era, especially those filled with complex characters and gritty atmospheres. I'm looking for something that captures the essence of crime and the struggles of that time period.","What kind of direction or constraint do you have in mind for this historical content? For example, do you want: 
+- more focus on character development 
+- less action and more dialogue 
+- an emphasis on moral dilemmas 
+- contrasting perspectives on historical events 
+Examples (feel free to answer differently):","I enjoy stories that transport me to a different time, especially with complex characters and intense drama. I'm looking for something that captures the gritty atmosphere of the 1920s or 30s.","The user seeks a historical narrative set in the gritty atmosphere of the 1920s or 30s, focusing on complex characters and intense drama.",ALL
+556c30cf-ab20-444a-a1ba-2823f885f01e,2026-01-02T09:13:43.575207,A story about growing up.,"What kind of atmosphere or tone do you prefer for this story about growing up? For example, do you want it to be more nostalgic, hopeful, or perhaps melancholic? Examples (feel free to answer differently):
+- Nostalgic
+- Hopeful
+- Melancholic
+- Tense",I love stories that evoke a sense of nostalgia and capture the essence of friendship during formative years. A touch of mystery always adds to the excitement and keeps me engaged.,"What kind of direction or constraint do you prefer for the story? For example, do you want more focus on character development, less emphasis on action, or perhaps an avoidance of overly lighthearted themes? Examples (feel free to answer differently):
+Examples (feel free to answer differently):
+- more introspective and subtle
+- darker and heavier
+- lighter and hopeful
+- slower and contemplative",I love stories that evoke a sense of nostalgia and capture the essence of friendship during formative years. A touch of mystery adds an exciting layer that I really enjoy.,"A nostalgic story about growing up that captures the essence of friendship during formative years, with a touch of mystery that adds excitement.",ALL

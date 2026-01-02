@@ -207,6 +207,81 @@ def evaluate_usr(user_intent, answer):
         print(f"⚠️⚠️⚠️ Judge failed at user satisfaction: {response[:50]}...")
     return score, response
 
+# Simuleert een sessie waarin de ClarifyGate bepaalt wanneer er gezocht wordt
+def run_dynamic_session(orch, sim_user, seed_text):
+
+    history = [] # Lijst van dicts: {'role': 'user', 'content': '...'}
+    current_input = seed_text
+    turns = 0
+    
+    # Max 5 beurten om oneindige loops te voorkomen
+    for _ in range(5):
+        # Gebruik ClarifyGate
+        response = orch.chat(user_message=current_input, history=history)
+        
+        # Check: Heeft de bot besloten te zoeken? (state == 'search')
+        if response.get("state") == "search" or response.get("recommendations"):
+            return response.get("final_query"), response.get("response_text"), turns
+            
+        # Check: De bot stelt een vervolgvraag (state == 'clarify')
+        else:
+            bot_question = response.get("response_text")
+            print(f"      [Dynamic Bot]: {bot_question[:60]}...")
+            
+            # Laat de SimUser antwoorden op basis van Hidden Intent
+            user_answer = sim_user.answer_question(bot_question)
+            print(f"      [Dynamic User]: {user_answer}")
+            
+            # Update history voor de volgende ronde
+            history.append({"role": "user", "content": current_input})
+            history.append({"role": "assistant", "content": bot_question})
+            current_input = user_answer
+            turns += 1
+
+    return seed_text, "Timeout", turns
+
+## Main script ###############################################################################################################################################
+#
+
+## Helper functie voor Dynamic Session #######################################################################################################################
+#
+
+def run_dynamic_session(orch, sim_user, seed_text):
+    """
+    Laat de ChatOrchestrator (en interne ClarifyGate) het volledige gesprek voeren.
+    We geven een 'input_fn' mee die de Simulated User koppelt aan de Orchestrator.
+    """
+    
+    # 1. Definieer de 'hook' die de orchestrator aanroept als hij een vraag heeft
+    def automated_input_hook(prompt_text):
+        # Print de vraag van de bot
+        clean_q = prompt_text.split('\n')[0]
+        print(f"      [Dynamic Bot]: {clean_q[:60]}...")
+        
+        # Laat de SimUser antwoorden
+        ans = sim_user.answer_question(prompt_text)
+        print(f"      [Dynamic User]: {ans}")
+        return ans
+
+    # 2. Start de chat (GEEN loop hier, de orchestrator doet de loop intern!)
+    # Let op: we gebruiken parameter 'seed' en geven 'input_fn' mee.
+    final_output_text, elicitation_result = orch.chat(
+        seed=seed_text,
+        input_fn=automated_input_hook,
+        print_fn=lambda x: None # We printen zelf al hierboven
+    )
+
+    # 3. Haal statistieken uit het resultaat
+    turns = 0
+    final_query = seed_text
+    
+    if elicitation_result:
+        # Als er vragen zijn gesteld, zit dat in het result object
+        turns = len(elicitation_result.turns)
+        final_query = elicitation_result.final_query
+
+    return final_query, final_output_text, turns
+
 ## Main script ###############################################################################################################################################
 #
 
@@ -216,29 +291,33 @@ print(f"\n =================== Starting automated evaluation of ({len(TEST_SCENA
 
 for scenario in TEST_SCENARIOS:
     max_q = scenario.get("max_questions", 2)
-    print(f"Scenario {scenario['id']}: {scenario['seed']} (Max no. questions: {max_q})")
-    
-    # New elicitor with limit for current scenario
-    elicitor = PreferenceElicitorLLM(llm=orchestrator.llm_adapter, max_questions=max_q)
-    
-## Step 1: Single shot
+    print(f"\nScenario {scenario['id']}: {scenario['seed']}")
+
+    # Initialize SimUser for this scenario
+    sim_user = SimulatedUser(scenario['hidden_intent'])
+
+    # Baseline (Nulmeting voor beide strategieën)
+
     baseline_output = orchestrator.run_once(scenario['seed'])
     
-    # Context
-    emb = test_embedder.embed(scenario['seed'])
-    raw_results = orchestrator.vector_store.similarity_search(emb, k=3)
-    context_text = "\n".join([r.document for r in raw_results if r.document])
+    # Calculate Baseline USR & PR (Used for RRI calculation in both strategies)
+    emb_base = test_embedder.embed(scenario['seed'])
+    raw_results_base = orchestrator.vector_store.similarity_search(emb_base, k=3)
+    ctx_base = "\n".join([r.document for r in raw_results_base if r.document])
     
-    # Judge
-    pr_score_1, pr_raw_1 = evaluate_precision(scenario['seed'], context_text, baseline_output)
-    usr_score_1, usr_raw_1 = evaluate_usr(scenario['hidden_intent'], baseline_output)
-    
-    print(f"   -> Baseline USR: {usr_score_1}/5 | PR: {pr_score_1}/5")
+    pr_score_base, _ = evaluate_precision(scenario['seed'], ctx_base, baseline_output)
+    usr_score_base, _ = evaluate_usr(scenario['hidden_intent'], baseline_output)
 
-## Step 2: Dialogue
-    sim_user = SimulatedUser(scenario['hidden_intent'])
+    print(f"   -> Baseline USR: {usr_score_base}/5 | PR: {pr_score_base}/5")
+
+    # Strategy 1: Fixed elicitor 
+
+    print(f"  [Running Strategy: FIXED-ELICITOR ({max_q} Qs)]")
     
-    def automated_input(prompt_text):
+    elicitor = PreferenceElicitorLLM(llm=orchestrator.llm_adapter, max_questions=max_q)
+
+    ## Step 1: Dialogue (Fixed)
+    def automated_input_fixed(prompt_text):
         display_q = prompt_text.split('\n')[0] 
         print(f"      [Bot]: {display_q[:60]}...")
         ans = sim_user.answer_question(prompt_text)
@@ -247,41 +326,79 @@ for scenario in TEST_SCENARIOS:
 
     elicitation_result = elicitor.run(
         user_seed=scenario['seed'],
-        input_fn=automated_input,
+        input_fn=automated_input_fixed,
         print_fn=lambda x: None
     )
     
-    final_query = elicitation_result.final_query
-    print(f"      [Final Query]: {final_query}")
+    final_query_fix = elicitation_result.final_query
+    print(f"      [Final Query]: {final_query_fix}")
     
-    final_output = orchestrator.run_once(final_query)
+    final_output_fix = orchestrator.run_once(final_query_fix)
     
-    emb_final = test_embedder.embed(final_query)
-    raw_results_final = orchestrator.vector_store.similarity_search(emb_final, k=3)
-    context_text_final = "\n".join([r.document for r in raw_results_final if r.document])
+    ## Step 2: Context & Evaluation (Fixed)
+    emb_fix = test_embedder.embed(final_query_fix)
+    raw_results_fix = orchestrator.vector_store.similarity_search(emb_fix, k=3)
+    context_text_fix = "\n".join([r.document for r in raw_results_fix if r.document])
 
-    # Judge
-    pr_score_2, pr_raw_2 = evaluate_precision(final_query, context_text_final, final_output)
-    usr_score_2, usr_raw_2 = evaluate_usr(scenario['hidden_intent'], final_output)
+    pr_score_fix, pr_raw_fix = evaluate_precision(final_query_fix, context_text_fix, final_output_fix)
+    usr_score_fix, usr_raw_fix = evaluate_usr(scenario['hidden_intent'], final_output_fix)
     
-    print(f"   -> Final USR: {usr_score_2}/5 | PR: {pr_score_2}/5")
+    ## Step 3: RRI (Fixed)
+    rri_score_fix = usr_score_fix - usr_score_base
+    print(f"   -> Final USR: {usr_score_fix}/5 | RRI: {rri_score_fix}")
 
-## Step 3: RRI
-    rri_score = usr_score_2 - usr_score_1
-    print(f"   -> RRI: {rri_score}")
-
-    # Results appending
     results_data.append({
         "Scenario ID": scenario['id'],
+        "Strategy": "Fixed-Elicitor",
         "Max Questions": max_q,
         "Start question": scenario['seed'],
         "User intent (hidden)": scenario['hidden_intent'],
-        "USR (Single shot)": usr_score_1,
-        "PR (Single shot)": pr_score_1,
-        "USR (Final)": usr_score_2,
-        "PR (Final)": pr_score_2,
-        "RRI": rri_score,
-        "Judge Reasoning": extract_reason(usr_raw_2)
+        "USR (Single shot)": usr_score_base,
+        "PR (Single shot)": pr_score_base,
+        "USR (Final)": usr_score_fix,
+        "PR (Final)": pr_score_fix,
+        "RRI": rri_score_fix,
+        "Judge Reasoning": extract_reason(usr_raw_fix)
+    })
+
+    # Strategy 2: Dynamic gate
+    print(f"  [Running Strategy: Clarify gate]")
+
+    ## Step 1: Dialogue (Dynamic)
+    # We gebruiken hier de helper functie run_dynamic_session
+    dyn_query, dyn_output_text, dyn_turns = run_dynamic_session(orchestrator, sim_user, scenario['seed'])
+    
+    print(f"      [Final Query]: {dyn_query}")
+
+    # Als output "Timeout" is of de text geen recommendations bevat, doen we alsnog een search
+    final_output_dyn = dyn_output_text
+    if dyn_output_text == "Timeout" or "Recommendation" not in dyn_output_text:
+         final_output_dyn = orchestrator.run_once(dyn_query)
+
+    ## Step 2: Context & Evaluation (Dynamic)
+    emb_dyn = test_embedder.embed(dyn_query)
+    raw_results_dyn = orchestrator.vector_store.similarity_search(emb_dyn, k=3)
+    context_text_dyn = "\n".join([r.document for r in raw_results_dyn if r.document])
+
+    pr_score_dyn, pr_raw_dyn = evaluate_precision(dyn_query, context_text_dyn, final_output_dyn)
+    usr_score_dyn, usr_raw_dyn = evaluate_usr(scenario['hidden_intent'], final_output_dyn)
+
+    ## Step 3: RRI (Dynamic)
+    rri_score_dyn = usr_score_dyn - usr_score_base
+    print(f"   -> Final USR: {usr_score_dyn}/5 | RRI: {rri_score_dyn} | Turns: {dyn_turns}")
+
+    results_data.append({
+        "Scenario ID": scenario['id'],
+        "Strategy": "Dynamic-Gate",
+        "Max Questions": dyn_turns, # We loggen hier het aantal beurten dat de Gate zelf koos
+        "Start question": scenario['seed'],
+        "User intent (hidden)": scenario['hidden_intent'],
+        "USR (Single shot)": usr_score_base,
+        "PR (Single shot)": pr_score_base,
+        "USR (Final)": usr_score_dyn,
+        "PR (Final)": pr_score_dyn,
+        "RRI": rri_score_dyn,
+        "Judge Reasoning": extract_reason(usr_raw_dyn)
     })
     
     time.sleep(1)

@@ -1,0 +1,27 @@
+Input
+
+    Scenario ID: Het unieke nummer van het testscenario zoals gedefinieerd in het testbestand.
+    Seed: De initiële zoekopdracht die de gebruiker invoert
+    Hidden Intent: Het werkelijke doel of de specifieke voorkeur van de gebruiker die de chatbot moet proberen te achterhalen. Dit is de "Ground Truth" waartegen wordt getest.
+
+Single Turn
+
+    Single Turn Response: De lijst met aanbevelingen (titels + beschrijvingen) die de chatbot gaf direct na de seed, zonder verdiepende vragen te stellen.
+    Score (Single): De beoordeling (op een schaal van 1 tot 5) gegeven door de LLM Judge. Deze score geeft aan hoe goed de single-turn response aansluit bij de Hidden Intent.
+    Reason (Single): De tekstuele onderbouwing van de LLM Judge voor de gegeven Score (Single).
+    Intent Sim (Single): De similarity score (een getal tussen 0 en 1). Dit meet wiskundig hoe sterk de vectoren van de single-turn resultaten overeenkomen met de Hidden Intent.
+    Seed Sim (Single): De similarity score tussen de single-turn resultaten en de oorspronkelijke seed.
+
+Multi Turn
+
+    Multi Turn Response: De lijst met aanbevelingen die de chatbot gaf na het stellen van verdiepende vragen en het ontvangen van antwoorden van de Simulated User.
+    Score (Multi): De usr beoordeling (1-5) door de LLM Judge voor de multi-turn antwoorden.
+    Reason (Multi): De onderbouwing van de Judge voor de score (multi).
+    Intent Sim (Multi): De similarity score tussen de multi-turn resultaten en de Hidden Intent. Een hogere score betekent dat de resultaten dichter bij het werkelijke doel liggen.
+    Seed Sim (Multi): De similarity score tussen de multi-turn resultaten en de oorspronkelijke seed.
+
+Prestatie Metrics
+
+    RRI (Judge): USR Score improvement gebaseerd op het oordeel van de Judge. Dit getal geeft aan hoeveel de kwaliteit is toegenomen/afgenomen door de dialoog aan te gaan. (positief = verbetering).
+    RRI (Intent Sim): De verbetering in de wiskundige similarity score. Dit laat zien of de gevonden resultaten qua betekenis dichter bij de Hidden Intent zijn gekomen na de verdiepende vragen.
+    Turns Used: Het aantal verdiepende vragen dat de ClarifyGate heeft gesteld (bijv. 0, 1 of 2) voordat het definitieve antwoord werd gegeven.

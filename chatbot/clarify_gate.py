@@ -166,8 +166,17 @@ class ClarifyGate:
 
             if action == "ask" and remaining > 0 and isinstance(question, str) and question.strip():
                 q = self._ensure_examples_block(question.strip())
+                
+                # --- FIX START: Correct handling of input_fn for Simulated User ---
                 print_fn("\n" + q)
-                ans = (input_fn("> ") or "").strip()
+                
+                if input_fn == input:
+                    # Als het een mens is (standaard CLI), toon prompt-pijltje
+                    ans = (input_fn("> ") or "").strip()
+                else:
+                    # Als het SimulatedUser is, geef de VRAAG mee als argument!
+                    ans = (input_fn(q) or "").strip()
+                # --- FIX END ---
 
                 if ans == "":
                     # user declines further input -> stop

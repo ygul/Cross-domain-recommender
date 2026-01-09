@@ -1,17 +1,21 @@
 from pathlib import Path
-import io
 import configparser
-import requests
 import pandas as pd
 import chromadb
 from chromadb.utils import embedding_functions
 import shutil
+import warnings   # 👈 toevoegen
+
+warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
 # -------------------------------------------------
 # Config & paden
 # -------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent
+REPO_ROOT = BASE_DIR.parent
+
 CONFIG_PATH = BASE_DIR / "config.ini"
+excel_path = REPO_ROOT / "data" / "complete dataset.xlsx"
 
 config = configparser.ConfigParser()
 config.read(CONFIG_PATH)
@@ -22,19 +26,15 @@ DATA_DIR = DB_ROOT / "data"
 print(f"Chroma DB root: {DB_ROOT}")
 print(f"Data map: {DATA_DIR}")
 
-# -------------------------------------------------
-# Download Google Sheet
-# -------------------------------------------------
-sheet_id = config["BESTANDEN"]["google_sheet_id"]
-url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=xlsx"
+print(f"📄 Excel inlezen vanaf: {excel_path}")
+if not excel_path.exists():
+    raise FileNotFoundError(
+        f"Excel bestand niet gevonden: {excel_path}\n"
+        f"Zorg dat het bestand bestaat op: {REPO_ROOT / 'data' / 'complete dataset.xlsx'}"
+    )
 
-print("⬇Downloaden Google Sheet...")
-response = requests.get(url, timeout=60)
-if response.status_code != 200:
-    raise RuntimeError("Google Sheet niet bereikbaar (check sharing settings)")
-
-df = pd.read_excel(io.BytesIO(response.content))
-print("Excel succesvol gedownload")
+df = pd.read_excel(excel_path)
+print("✅ Excel succesvol ingelezen")
 
 # -------------------------------------------------
 # Opschonen data

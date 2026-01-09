@@ -4,7 +4,7 @@ import pandas as pd
 import chromadb
 from chromadb.utils import embedding_functions
 import shutil
-import warnings   # 👈 toevoegen
+import warnings
 
 warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 

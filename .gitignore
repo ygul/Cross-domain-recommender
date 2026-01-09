@@ -5,13 +5,11 @@ env/
 .chat/
 
 # Specifiek voor jouw experiment folder structuur
-experiment/chromadb/chromadb/Lib/
-experiment/chromadb/chromadb/Scripts/
+experiment/chromadb/chromadb/
 experiment/chromadb/.venv/
 
 # Ignore secrets
 .env
-config.ini
 
 # Ignore local database files
 *.sqlite3
@@ -35,3 +33,6 @@ __pycache__/
 .vscode/
 .idea/
 .DS_Store
+
+# Image files in de root folder (de gegenereerde PCA plots na creatie van de database)
+/*.png

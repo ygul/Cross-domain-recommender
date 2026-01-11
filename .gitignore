@@ -36,3 +36,6 @@ __pycache__/
 
 # Image files in de root folder (de gegenereerde PCA plots na creatie van de database)
 /*.png
+
+# Logs
+logs/

@@ -51,6 +51,9 @@ class ChatOrchestrator:
         self.logger: Optional[ElicitationLogger] = (
             ElicitationLogger(base_dir=logs_dir) if enable_logging else None
         )
+        
+        # Store last search results for external access (e.g., by judge module)
+        self.last_search_results = []
 
     def run_once(
         self,
@@ -80,6 +83,9 @@ class ChatOrchestrator:
                 k=self.max_items,
                 where=where_filter,
             )
+
+        # Store results for external access
+        self.last_search_results = results
 
         return format_results(user_input, results, self.llm_adapter)
 
@@ -125,4 +131,23 @@ class ChatOrchestrator:
             )
 
         formatted = self.run_once(final_query, item_types=item_types, use_alternative_collection=use_alternative_collection)
+        # Note: last_search_results is already set by run_once()
         return formatted, elicited
+    
+    def get_last_search_results(self):
+        """
+        Get the vector search results from the last run_once() or chat() call.
+        
+        Returns:
+            list: List of search results with metadata, distances, and documents.
+                  Empty list if no searches have been performed yet.
+                  
+        Example:
+            >>> orchestrator = ChatOrchestrator()
+            >>> response = orchestrator.run_once("science fiction books")
+            >>> results = orchestrator.get_last_search_results()
+            >>> print(f"Found {len(results)} results")
+            >>> for result in results:
+            ...     print(f"Distance: {result['distance']}, Title: {result['metadata']['title']}")
+        """
+        return self.last_search_results.copy()  # Return copy to prevent external modification

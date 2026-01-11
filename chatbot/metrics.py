@@ -81,7 +81,6 @@ def evaluate_usr(hidden_intent: str, model_response: str, llm_adapter: LLMAdapte
                 # Currently not used, but could be logged if needed
                 individual_scores_str = line.split("INDIVIDUAL SCORES:")[1].strip()
                 individual_scores = [s.strip() for s in individual_scores_str.split(',')]
-                print(f"Judge individual scores: {individual_scores}")
         
         # Fallback als REASON niet op een nieuwe regel staat
         if reason == "Parse error" and len(lines) > 0:
@@ -90,13 +89,11 @@ def evaluate_usr(hidden_intent: str, model_response: str, llm_adapter: LLMAdapte
     except Exception as e:
         print(f"Judge parse warning: {raw_output} - Error: {e}")
 
-    # If individual scores are given, average them and override the main score. Log a warning if there's a discrepancy.
+    # If individual scores are given, average them and override the main score.
     if 'individual_scores' in locals() and individual_scores:
         try:
             individual_scores_float = [float(s) for s in individual_scores]
             avg_individual_score = sum(individual_scores_float) / len(individual_scores_float)
-            if abs(avg_individual_score - score) > 0.1:
-                print(f"Warning: Discrepancy between main score ({score}) and average individual scores ({avg_individual_score:.1f})")
             score = avg_individual_score
         except ValueError:
             print("Warning: Could not parse individual scores to float.")

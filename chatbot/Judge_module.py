@@ -11,7 +11,6 @@ from dotenv import load_dotenv
 
 from chat_orchestrator import ChatOrchestrator
 from simulated_user import SimulatedUser
-from query_embedder import QueryEmbedder
 from llm_adapter import create_llm_adapter
 from metrics import evaluate_usr, calculate_average_similarity
 
@@ -48,23 +47,6 @@ def load_scenarios(filepath):
         sys.exit(1)
     return scenarios
 
-## calculate cosine similarity
-def cosine_similarity(vec_a, vec_b):
-    if vec_a is None or vec_b is None:
-        return 0.0
-    
-    a = np.array(vec_a).flatten()
-    b = np.array(vec_b).flatten()
-    
-    norm_a = np.linalg.norm(a)
-    norm_b = np.linalg.norm(b)
-    
-    if norm_a == 0 or norm_b == 0:
-        return 0.0
-        
-    return np.dot(a, b) / (norm_a * norm_b)
-
-
 ## Judge ####################################################################################################################################################
 #
 
@@ -74,7 +56,7 @@ def main():
     
     ## Initialization
     orchestrator = ChatOrchestrator() 
-    metrics_embedder = QueryEmbedder() 
+    metrics_embedder = orchestrator.get_primary_query_embedder()  # Get embedder from orchestrator
     judge_adapter = create_llm_adapter(temperature=0.0) # Low temperature for deterministic judging
     
     ## Get scenarios
@@ -101,7 +83,6 @@ def main():
         
         # Get the actual vector search results that were used
         search_results_singleturn = orchestrator.get_last_search_results()
-        print(f"[Vector DB]: Found {len(search_results_singleturn)} items with embeddings: {[r.embedding[:5] if r.embedding else None for r in search_results_singleturn]}")
                 
         print(f"[Bot final answer]: {single_turn_response}")
         
@@ -127,7 +108,6 @@ def main():
 
         # Get the actual vector search results that were used
         search_results_multiturn = orchestrator.get_last_search_results()
-        print(f"[Vector DB]: Found {len(search_results_multiturn)} items with embeddings: {[r.embedding[:5] if r.embedding else None for r in search_results_multiturn]}")
         
         print(f"\n[Bot Final Answer (multi-turn)]: {multi_turn_response_text}")
         
@@ -157,7 +137,7 @@ def main():
         
         rri_judge = score_multi - score_single
 
-        print(f"- Judge scores: Single {score_single}/5 | Multi {score_multi}/5 | RRI: {rri_judge}")
+        print(f"- Judge scores: Single {score_single:.2f}/5 | Multi {score_multi:.2f}/5 | RRI: {rri_judge:.2f}")
         print(f"- Intent similarity  	: Single {cos_sim_intent_single:.3f} | Multi {cos_sim_intent_multi:.3f}")
 
 
@@ -181,7 +161,7 @@ def main():
             "Intent Sim (Multi)": round(cos_sim_intent_multi, 4),
             
             # RRI values
-            "RRI (Judge)": rri_judge,
+            "RRI (Judge)": round(rri_judge, 2),
             "RRI (Intent Sim)": round(rri_cos_sim, 4),
             "Turns Used": len(result_obj.turns) if result_obj else 0
         })
@@ -195,6 +175,15 @@ def main():
         output_file = BASE_DIR / "rag_evaluation_final.xlsx"
         df.to_excel(output_file, index=False)
         print(f"\nEvaluation Complete. Results saved to {output_file}")
+        
+        # Generate comprehensive reports and visualizations
+        from report_generator import EvaluationReportGenerator
+        print("\n" + "="*60)
+        print("🎨 GENERATING EVALUATION REPORTS & VISUALIZATIONS")
+        print("="*60)
+        
+        generator = EvaluationReportGenerator(str(output_file))
+        generator.generate_all_reports()
 
     else:
         print("No results generated.")

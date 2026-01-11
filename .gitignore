@@ -16,6 +16,9 @@ experiment/chromadb/.venv/
 *.bin
 experiment/chromadb/data/
 
+# Ignore generated charts
+charts/
+
 
 # Python standaard negeren
 __pycache__/

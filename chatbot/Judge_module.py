@@ -129,17 +129,12 @@ def main():
         
         # Embeddings
         vec_intent = metrics_embedder.embed(scenario['hidden_intent'])
-        vec_seed   = metrics_embedder.embed(scenario['seed']) # Nieuw
         vec_single = metrics_embedder.embed(single_turn_response)
         vec_multi  = metrics_embedder.embed(multi_turn_response_text)
         
         # Calculate cosine similarity (Intent vs Answers)
         cos_sim_intent_single = cosine_similarity(vec_intent, vec_single)
         cos_sim_intent_multi = cosine_similarity(vec_intent, vec_multi)
-        
-        # Calculate cosine similarity (Seed vs Answers)
-        cos_sim_seed_single = cosine_similarity(vec_seed, vec_single)
-        cos_sim_seed_multi = cosine_similarity(vec_seed, vec_multi)
         
         # Calculate RRI based on intent similarity
         rri_cos_sim = cos_sim_intent_multi - cos_sim_intent_single
@@ -161,7 +156,7 @@ def main():
 
         print(f"- Judge scores: Single {score_single}/5 | Multi {score_multi}/5 | RRI: {rri_judge}")
         print(f"- Intent similarity  	: Single {cos_sim_intent_single:.3f} | Multi {cos_sim_intent_multi:.3f}")
-        print(f"- Seed similarity  	: Single {cos_sim_seed_single:.3f} | Multi {cos_sim_seed_multi:.3f}")
+
 
         ## Save results
 
@@ -175,14 +170,12 @@ def main():
             "Score (Single)": score_single,
             "Reason (Single)": reason_single,
             "Intent Sim (Single)": round(cos_sim_intent_single, 4),
-            "Seed Sim (Single)": round(cos_sim_seed_single, 4), # Nieuw
             
             # Multi-turn data
             "Multi Turn Response": multi_turn_response_text[:200] + "...",
             "Score (Multi)": score_multi,
             "Reason (Multi)": reason_multi,
             "Intent Sim (Multi)": round(cos_sim_intent_multi, 4),
-            "Seed Sim (Multi)": round(cos_sim_seed_multi, 4), # Nieuw
             
             # RRI values
             "RRI (Judge)": rri_judge,

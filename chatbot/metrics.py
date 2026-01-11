@@ -12,14 +12,14 @@ from llm_adapter import LLMAdapter, create_llm_adapter
 # USR (User Satisfaction Rating) Rubric for LLM Judge
 ###############################################################################################################
 USR_RUBRIC = """
-- Score 1 (Bad): The response is completely irrelevant, hallucinates facts, or ignores the user's hidden intent entirely.
-- Score 2 (Poor): The response touches on the topic but recommends the wrong items or misses the core mood/style of the hidden intent.
-- Score 3 (Average): The response is acceptable and relevant, but generic. It fits the broad category but lacks specific nuance from the hidden intent.
-- Score 4 (Good): The response matches the hidden intent well and recommends items that fit the specific description (e.g. isolation/madness).
-- Score 5 (Excellent): The response perfectly captures the hidden intent. The recommendation is exactly what the user implicitly wanted.
+- Score 1 (Bad): Completely irrelevant recommendations that ignore the hidden intent entirely (wrong domain, genre, or purpose).
+- Score 2 (Poor): Correct domain but wrong mood, style, or key attributes (e.g., comedy instead of thriller, action instead of romance).
+- Score 3 (Average): Matches broad category and general mood, but recommendations are generic without capturing specific nuances.
+- Score 4 (Good): Captures most intent elements with appropriate mood/style, but may have minor gaps or less optimal choices.
+- Score 5 (Excellent): Perfect alignment - recommendations precisely fulfill the implicit need with ideal mood, style, and specificity.
 """
 
-def evaluate_usr(hidden_intent: str, model_response: str, llm_adapter: LLMAdapter) -> Tuple[int, str]:
+def evaluate_usr(hidden_intent: str, model_response: str, llm_adapter: LLMAdapter) -> Tuple[float, str]:
     """
     Evaluate User Satisfaction Rating (USR) using an LLM as a judge.
     
@@ -33,28 +33,23 @@ def evaluate_usr(hidden_intent: str, model_response: str, llm_adapter: LLMAdapte
         
     Returns:
         tuple: (score, reason) where:
-            - score (int): USR score from 1 (Bad) to 5 (Excellent)
+            - score (float): USR score from 1.0 (Bad) to 5.0 (Excellent)
             - reason (str): Explanation for the score from the judge
             
-    Examples:
-        >>> from llm_adapter import create_llm_adapter
-        >>> adapter = create_llm_adapter(provider='openai', model='gpt-4o-mini', temperature=0.0)
-        >>> score, reason = evaluate_usr(
-        ...     "Books about isolation and madness",
-        ...     "I recommend 'The Shining' by Stephen King",
-        ...     adapter
-        ... )
-        >>> print(f"Score: {score}/5 - {reason}")
-        Score: 5/5 - Perfect match for isolation/madness theme
     """
-    system_prompt = f"""You are an expert judge evaluating a recommender system.
+    system_prompt = f"""You are an expert judge evaluating a recommender system. For each recommendation (multiple may be given), assess how well it satisfies the user's hidden intent based on the rubrics.
+    Then, provide an average SCORE (with one decimal place) and a REASON.
     
     RUBRIC FOR SCORING:
     {USR_RUBRIC}
     
+    IMPORTANT: You MUST provide a score with one decimal place (e.g., 4.5, 3.7, 2.1).
+    Do NOT use whole numbers only. Be precise in your evaluation.
+    
     Output format:
-    SCORE: [1-5]
+    SCORE: [1.0-5.0 with one decimal, e.g. 4.5 or 3.7]
     REASON: [Short explanation]
+    INDIVIDUAL SCORES: [If multiple recommendations, list individual scores, e.g. 5.0, 4.5, 3.2]
     """
     
     user_prompt = f"""
@@ -67,18 +62,26 @@ def evaluate_usr(hidden_intent: str, model_response: str, llm_adapter: LLMAdapte
     raw_output = llm_adapter.generate(system_prompt, user_prompt)
     
     # Scoring + motivation
-    score = 1
+    score = 1.0
     reason = "Parse error"
     
     try:
         lines = raw_output.split('\n')
         for line in lines:
             if "SCORE:" in line:
-                score_str = line.split("SCORE:")[1].strip() # Select first character if starts with a number ('4 (Good)')
-                score = int(score_str[0])
+                score_str = line.split("SCORE:")[1].strip()
+                # Extract decimal score (e.g., "4.5" from "4.5 (Good)")
+                score_parts = score_str.split()[0]
+                score = float(score_parts)
  
             if "REASON:" in line:
                 reason = line.split("REASON:")[1].strip()
+
+            if "INDIVIDUAL SCORES:" in line:
+                # Currently not used, but could be logged if needed
+                individual_scores_str = line.split("INDIVIDUAL SCORES:")[1].strip()
+                individual_scores = [s.strip() for s in individual_scores_str.split(',')]
+                print(f"Judge individual scores: {individual_scores}")
         
         # Fallback als REASON niet op een nieuwe regel staat
         if reason == "Parse error" and len(lines) > 0:
@@ -86,7 +89,18 @@ def evaluate_usr(hidden_intent: str, model_response: str, llm_adapter: LLMAdapte
             
     except Exception as e:
         print(f"Judge parse warning: {raw_output} - Error: {e}")
-        
+
+    # If individual scores are given, average them and override the main score. Log a warning if there's a discrepancy.
+    if 'individual_scores' in locals() and individual_scores:
+        try:
+            individual_scores_float = [float(s) for s in individual_scores]
+            avg_individual_score = sum(individual_scores_float) / len(individual_scores_float)
+            if abs(avg_individual_score - score) > 0.1:
+                print(f"Warning: Discrepancy between main score ({score}) and average individual scores ({avg_individual_score:.1f})")
+            score = avg_individual_score
+        except ValueError:
+            print("Warning: Could not parse individual scores to float.")
+
     return score, reason
 
 
@@ -175,10 +189,10 @@ EVALUATE_USR_TEST_CASES = [
         "expected_score_range": (3, 5)
     },
     {
-        "name": "Average Match (Expected Score: 3)",
+        "name": "Average Match (Expected Score: 3-4)",
         "hidden_intent": "Historical fiction set during World War II",
         "model_response": "I can suggest these titles: 1) 'The Book Thief' by Markus Zusak - set in Nazi Germany, 2) 'Saving Private Ryan' - World War II film about soldiers, 3) 'Band of Brothers' - miniseries following Easy Company through the war. These are all well-regarded historical works.",
-        "expected_score_range": (2, 4)
+        "expected_score_range": (3, 5)
     },
     {
         "name": "Poor Match (Expected Score: 2)",
@@ -419,7 +433,7 @@ def run_evaluate_usr_smoke_test():
             
             # Print results
             status = "✅ PASS" if score_in_range else "❌ FAIL"
-            print(f"📊 Result: Score {score}/5 - {reason}")
+            print(f"📊 Result: Score {score:.1f}/5 - {reason}")
             print(f"🎯 Expected Range: {min_score}-{max_score} | {status}")
             
             if not score_in_range:

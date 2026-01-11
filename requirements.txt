@@ -6,6 +6,7 @@ pandas
 openpyxl
 requests
 matplotlib
+seaborn
 scikit-learn
 sentence-transformers
 huggingface_hub[hf_xet]

@@ -5,8 +5,10 @@ from __future__ import annotations
 
 import os
 import time
+import configparser
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Literal
 
 from dotenv import load_dotenv
@@ -115,7 +117,7 @@ def create_llm_adapter(
     
     Args:
         provider: LLM provider to use ('openai' or 'huggingface')
-        model: Model name (defaults based on provider)
+        model: Model name (defaults based on provider and config.ini)
         temperature: Sampling temperature for generation
         max_retries: Maximum number of retry attempts
         sleep_between_calls: Sleep duration between API calls
@@ -129,8 +131,17 @@ def create_llm_adapter(
     # Set default model based on provider
     if model is None:
         if provider == "openai":
-            # Default for MVP: cheap + fast, upgrade later if needed
-            model = "gpt-4o-mini"
+            # Try to read from config.ini
+            try:
+                config = configparser.ConfigParser()
+                config_path = Path(__file__).resolve().parent / "config.ini"
+                if config_path.exists():
+                    config.read(config_path)
+                    model = config.get("AI", "llm_model_default", fallback="gpt-3.5-turbo")
+                else:
+                    model = "gpt-3.5-turbo"
+            except Exception:
+                model = "gpt-3.5-turbo"
         elif provider == "huggingface":
             model = "mistralai/Mistral-7B-Instruct-v0.2"
         else:

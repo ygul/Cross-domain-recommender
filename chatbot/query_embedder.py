@@ -1,5 +1,5 @@
 from chromadb.utils import embedding_functions
-import llm_adapter
+import llm_adapter as llm_module
 from llm_adapter import LLMAdapter
 
 SYSTEM_PROMPT = """ You rewrite user search queries to be optimal for semantic vector search. 
@@ -24,7 +24,7 @@ class QueryEmbedder:
             model_name (str, optional): Name of the sentence transformer model to use for embeddings.
                 Defaults to "paraphrase-multilingual-MiniLM-L12-v2".
             llm_adapter (llm_adapter.LLMAdapter | None, optional): An optional LLM adapter instance.
-                If not provided, defaults to None.
+                If not provided, a default adapter will be created (OpenAI).
 
         Returns:
             None
@@ -32,8 +32,16 @@ class QueryEmbedder:
         self._ef = embedding_functions.SentenceTransformerEmbeddingFunction(
             model_name=model_name
         )
-
-        self._llm_adapter = llm_adapter
+        # Use provided adapter or create a default one if possible
+        if llm_adapter is not None:
+            self._llm_adapter = llm_adapter
+        else:
+            try:
+                self._llm_adapter = llm_module.create_llm_adapter(provider="openai")
+                print("Default LLM adapter (OpenAI) created for QueryEmbedder.")
+            except Exception as e:
+                print(f"Warning: default LLM adapter could not be created: {e}")
+                self._llm_adapter = None
 
     def embed(self, query: str) -> list[float]:
         """Embed a single query string into a vector. Use the LLM adapter if provided during initialization to improve the query first."""
@@ -58,7 +66,7 @@ if __name__ == "__main__":
     test_query = "I want to see something that contains pirates and treasure. and romance too."
 
     # Improve the query with LLM and print it
-    llm_adapter_instance = llm_adapter.create_llm_adapter(provider="openai")
+    llm_adapter_instance = llm_module.create_llm_adapter(provider="openai")
     embedder = QueryEmbedder(llm_adapter=llm_adapter_instance)
     improved_query = embedder.improve_query_with_llm(test_query)
     print(f"Test query: {test_query}")

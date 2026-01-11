@@ -13,7 +13,7 @@ from chat_orchestrator import ChatOrchestrator
 from simulated_user import SimulatedUser
 from query_embedder import QueryEmbedder
 from llm_adapter import create_llm_adapter
-from metrics import evaluate_usr
+from metrics import evaluate_usr, calculate_average_similarity
 
 ## Setup ####################################################################################################################################################
 #
@@ -99,6 +99,10 @@ def main():
         # De orchestrator voert 1 keer de zoekslag uit
         single_turn_response = orchestrator.run_once(scenario['seed'])
         
+        # Get the actual vector search results that were used
+        search_results_singleturn = orchestrator.get_last_search_results()
+        print(f"[Vector DB]: Found {len(search_results_singleturn)} items with embeddings: {[r.embedding[:5] if r.embedding else None for r in search_results_singleturn]}")
+                
         print(f"[Bot final answer]: {single_turn_response}")
         
         ## Multi turn answering
@@ -120,6 +124,10 @@ def main():
             input_fn=automated_input_hook,
             print_fn=print # Show chatbot questions in console
         )
+
+        # Get the actual vector search results that were used
+        search_results_multiturn = orchestrator.get_last_search_results()
+        print(f"[Vector DB]: Found {len(search_results_multiturn)} items with embeddings: {[r.embedding[:5] if r.embedding else None for r in search_results_multiturn]}")
         
         print(f"\n[Bot Final Answer (multi-turn)]: {multi_turn_response_text}")
         
@@ -127,14 +135,9 @@ def main():
 
         print("\n[Calculating Metrics]")
         
-        # Embeddings
-        vec_intent = metrics_embedder.embed(scenario['hidden_intent'])
-        vec_single = metrics_embedder.embed(single_turn_response)
-        vec_multi  = metrics_embedder.embed(multi_turn_response_text)
-        
-        # Calculate cosine similarity (Intent vs Answers)
-        cos_sim_intent_single = cosine_similarity(vec_intent, vec_single)
-        cos_sim_intent_multi = cosine_similarity(vec_intent, vec_multi)
+        # Embeddings - calculate average similarity with all found items
+        cos_sim_intent_single = calculate_average_similarity(scenario['hidden_intent'], search_results_singleturn, metrics_embedder)
+        cos_sim_intent_multi = calculate_average_similarity(scenario['hidden_intent'], search_results_multiturn, metrics_embedder)
         
         # Calculate RRI based on intent similarity
         rri_cos_sim = cos_sim_intent_multi - cos_sim_intent_single

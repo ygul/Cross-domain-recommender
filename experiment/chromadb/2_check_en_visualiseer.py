@@ -9,7 +9,7 @@ from sklearn.decomposition import PCA
 # Config & paden
 # -------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent
-CONFIG_PATH = BASE_DIR / "config.ini"
+CONFIG_PATH = BASE_DIR / "scripts" / "config.ini"
 
 config = configparser.ConfigParser()
 
@@ -22,7 +22,6 @@ if "BESTANDEN" not in config:
     raise KeyError(f"[BESTANDEN] ontbreekt in {CONFIG_PATH}. Gevonden secties: {config.sections()}")
 
 DB_ROOT = (BASE_DIR / config["BESTANDEN"]["database_mapnaam"]).resolve()
-DATA_DIR = DB_ROOT / "data"
 
 print(f"Chroma DB root: {DB_ROOT}")
 

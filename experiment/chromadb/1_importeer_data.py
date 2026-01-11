@@ -12,9 +12,9 @@ warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 # Config & paden
 # -------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent
-REPO_ROOT = BASE_DIR.parents[0]
+REPO_ROOT = BASE_DIR.parents[1]
+CONFIG_PATH = BASE_DIR / "scripts" / "config.ini"
 
-CONFIG_PATH = BASE_DIR / "config.ini"
 excel_path = REPO_ROOT / "data" / "complete dataset.xlsx"
 
 config = configparser.ConfigParser()

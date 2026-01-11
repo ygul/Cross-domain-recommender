@@ -28,12 +28,7 @@ if [ "$1" == "ingest" ]; then
     python 1_importeer_data.py
     python 2_check_en_visualiseer.py
 
-elif [ "$1" == "eval" ]; then
-    echo "⚖️  Start Evaluatie (LLM Judge)..."
-    python 3_evaluate_rag.py
-
 else
     echo "Gebruik: ./run.sh [ingest|eval]"
     echo "  ingest : Database bouwen (script 1 & 2)"
-    echo "  eval   : RAG Evaluatie draaien (script 3)"
 fi

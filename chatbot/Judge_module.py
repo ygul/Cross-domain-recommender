@@ -56,7 +56,20 @@ def main():
     
     ## Initialization
     orchestrator = ChatOrchestrator() 
-    metrics_embedder = orchestrator.get_primary_query_embedder()  # Get embedder from orchestrator
+
+    # Ask user which embedding model to use for metrics
+    print("\nWhich embedding model would you like to use for metrics calculation?")
+    print("   1. Primary model")
+    print("   2. Alternative model")
+    choice = input("Enter 1 or 2 [default: 1]: ").strip()
+    
+    if choice == "2":
+        print("Using ALTERNATIVE embedder for metrics calculation")    
+        metrics_embedder = orchestrator.get_alternative_query_embedder()  # Use alternative embedder
+    else:
+        print("Using PRIMARY embedder for metrics calculation")
+        metrics_embedder = orchestrator.get_primary_query_embedder()  # Get primary embedder from orchestrator
+
     judge_adapter = create_llm_adapter(temperature=0.0) # Low temperature for deterministic judging
     
     ## Get scenarios

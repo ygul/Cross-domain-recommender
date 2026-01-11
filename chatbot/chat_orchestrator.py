@@ -151,3 +151,41 @@ class ChatOrchestrator:
             ...     print(f"Distance: {result['distance']}, Title: {result['metadata']['title']}")
         """
         return self.last_search_results.copy()  # Return copy to prevent external modification
+    
+    def get_primary_query_embedder(self) -> QueryEmbedder:
+        """
+        Get the primary embedding model instance.
+        
+        Returns the QueryEmbedder configured with the primary collection's embedding model
+        (typically paraphrase-multilingual-MiniLM-L12-v2). This embedder is used for all
+        queries when use_alternative_collection=False or is not specified.
+        
+        Returns:
+            QueryEmbedder: The primary embedder instance with the model used by the main collection.
+            
+        Example:
+            >>> orchestrator = ChatOrchestrator()
+            >>> embedder = orchestrator.get_primary_embedder()
+            >>> vector = embedder.embed("science fiction books")
+            >>> print(f"Embedding dimension: {len(vector)}")
+        """
+        return self.embedder_primary
+    
+    def get_alternative_query_embedder(self) -> QueryEmbedder:
+        """
+        Get the alternative embedding model instance.
+        
+        Returns the QueryEmbedder configured with the alternative collection's embedding model
+        (typically sentence-transformers/all-MiniLM-L6-v2). This embedder is used for all
+        queries when use_alternative_collection=True is specified.
+        
+        Returns:
+            QueryEmbedder: The alternative embedder instance with the model used by the alternative collection.
+            
+        Example:
+            >>> orchestrator = ChatOrchestrator()
+            >>> embedder = orchestrator.get_alternative_embedder()
+            >>> vector = embedder.embed("science fiction books")
+            >>> print(f"Embedding dimension: {len(vector)}")
+        """
+        return self.embedder_alternative

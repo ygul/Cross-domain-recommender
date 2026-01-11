@@ -2,24 +2,24 @@
 skinparam componentStyle rectangle
 skinparam shadowing false
 
+actor User
+
 ' === Colors ===
 !define V1_COLOR #d7f7d7
 !define V2_COLOR #d6e8ff
 !define EXT_COLOR #fff3cd
 !define DATA_COLOR #eeeeee
 
-package "Chatbot Application (v1)" V1_COLOR {
+package "Chatbot Application" V1_COLOR {
 
-  [Chat UI\n(chat_ui_cli.py / chat_ui_gradio.py)] as UI
+
+  [Chat UI\n(chat_ui_cli.py)] as UI
   [Chat Orchestrator\n(chat_orchestrator.py)] as ORCH
   [Results Formatter\n(results_formatter.py)] as FMT
-
-  UI -- ORCH
-  ORCH -- FMT
-}
-
-package "Optional Logic (v2)" V2_COLOR {
   [Clarify Gate\n(clarify_gate.py)] as GATE
+  UI -- ORCH
+  User -- UI
+  ORCH -- FMT
   ORCH -- GATE
 }
 

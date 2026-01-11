@@ -1,41 +1,41 @@
 flowchart TB
-    U["👤 User"] <--> UI["Chat UI<br>(CLI / Gradio)"]
+    U["User"] --> UI["Chat UI"]
     UI --> ORCH["Chat Orchestrator"]
 
-    ORCH --> GATE["Clarify Gate<br>(v2)<br>(max 1–2 questions)"]
-    ORCH --> EMB["Query Embedding<br>preferences → vector"]
-
-    %% Clarification loop
-    GATE -- needs info --> Q["Ask clarification<br>(v2)"]
+    %% Optional clarification branch
+    ORCH --> GATE["Clarify Gate"]
+    GATE -- clarification needed --> Q["Clarification Question"]
     Q --> UI
+    GATE -- sufficient info --> EMB
 
-    GATE -- enough info --> EMB
+    %% Main recommendation flow
+    %%ORCH --> EMB["Query Embedder<br>(preferences → vector)"]
 
-    %% OpenAI adapter (shared dependency)
-    EMB <-->|embedding call| OA["OpenAI Adapter"]
-    FMT <-->|completion call| OA
+    EMB["Query Embedder<br>(preferences → vector)"] --> VDB[("Chroma Vector DB<br>(shared embedding space)")]
+    VDB --> RET["Top-K Similarity Retrieval"]
 
-    EMB --> VDB[("Vector DB (CHROMA)<br>(shared embedding space)")]
-    VDB --> RET["Top-K Retrieval (K=5)"]
-
-    RET --> FMT["LLM response Formatter"]
-    FMT --> OUT["Response<br>Top-5 items + rationale"]
+    RET --> FMT["Results Formatter"]
+    FMT --> OUT["Response<br>(ranked items + rationale)"]
     OUT --> UI
 
+    %% External LLM dependency
+    EMB -.-|embedding text refinement| LLM["LLM Adapter"]
+    FMT -.- LLM
+
     %% Styling
-    classDef v1 fill:#d7f7d7,stroke:#2e7d32,color:#111
-    classDef v2 fill:#d6e8ff,stroke:#1e5aa8,color:#111
+    classDef core fill:#d7f7d7,stroke:#2e7d32,color:#111
+    classDef optional fill:#d6e8ff,stroke:#1e5aa8,color:#111
     classDef llm fill:#fff3cd,stroke:#f0ad4e,color:#111
 
-    U:::v1
-    UI:::v1
-    ORCH:::v1
-    EMB:::v1
-    VDB:::v1
-    RET:::v1
-    FMT:::v1
-    OUT:::v1
+    U:::core
+    UI:::core
+    ORCH:::core
+    EMB:::core
+    VDB:::core
+    RET:::core
+    FMT:::core
+    OUT:::core
 
-    GATE:::v2
-    Q:::v2
-    OA:::llm
+    GATE:::optional
+    Q:::optional
+    LLM:::llm

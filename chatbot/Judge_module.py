@@ -12,7 +12,8 @@ from dotenv import load_dotenv
 from chat_orchestrator import ChatOrchestrator
 from simulated_user import SimulatedUser
 from query_embedder import QueryEmbedder
-from working_adapter import WorkingAdapter 
+from llm_adapter import create_llm_adapter
+from metrics import evaluate_usr
 
 ## Setup ####################################################################################################################################################
 #
@@ -21,14 +22,6 @@ from working_adapter import WorkingAdapter
 load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent
 
-# LLM Judge guard rails
-USR_RUBRIC = """
-- Score 1 (Bad): The response is completely irrelevant, hallucinates facts, or ignores the user's hidden intent entirely.
-- Score 2 (Poor): The response touches on the topic but recommends the wrong items or misses the core mood/style of the hidden intent.
-- Score 3 (Average): The response is acceptable and relevant, but generic. It fits the broad category but lacks specific nuance from the hidden intent.
-- Score 4 (Good): The response matches the hidden intent well and recommends items that fit the specific description (e.g. isolation/madness).
-- Score 5 (Excellent): The response perfectly captures the hidden intent. The recommendation is exactly what the user implicitly wanted.
-"""
 
 SCENARIO_FILE = BASE_DIR / "test_scenarios.txt"
 
@@ -75,63 +68,6 @@ def cosine_similarity(vec_a, vec_b):
 ## Judge ####################################################################################################################################################
 #
 
-## Call to LLM judge
-def ask_judge(system_prompt, user_prompt, model_adapter):
-    response = model_adapter.chat_completion(
-        system_prompt=system_prompt,
-        user_prompt=user_prompt,
-        max_tokens=200,
-        temperature=0.0 # Judge moet strikt en consistent zijn
-    )
-    return response
-
-## Evaluate USR (score + motivation)
-def evaluate_usr(hidden_intent, model_response, model_adapter):
-    system_prompt = f"""You are an expert judge evaluating a recommender system.
-    
-    RUBRIC FOR SCORING:
-    {USR_RUBRIC}
-    
-    Output format:
-    SCORE: [1-5]
-    REASON: [Short explanation]
-    """
-    
-    user_prompt = f"""
-    User Hidden Intent: "{hidden_intent}"
-    Chatbot Response: "{model_response}"
-    
-    Evaluate how well the response satisfies the hidden intent based on the rubric.
-    """
-    
-    raw_output = ask_judge(system_prompt, user_prompt, model_adapter)
-    
-    # Scoring + motivation
-    score = 1
-    reason = "Parse error"
-    
-    try:
-        lines = raw_output.split('\n')
-        for line in lines:
-            if "SCORE:" in line:
-                score_str = line.split("SCORE:")[1].strip() # Select first character if starts with a number ('4 (Good)')
-                score = int(score_str[0])
- 
-            if "REASON:" in line:
-                reason = line.split("REASON:")[1].strip()
-        
-        # Fallback als REASON niet op een nieuwe regel staat
-        if reason == "Parse error" and len(lines) > 0:
-            reason = raw_output.replace('\n', ' ')
-            
-    except Exception as e:
-        print(f"Judge parse warning: {raw_output} - Error: {e}")
-        
-    return score, reason
-
-## Main #####################################################################################################################################################
-#
-
 def main():
 
     print("\n Running chatbot evaluation using LLM-as-a-Judge")
@@ -139,7 +75,7 @@ def main():
     ## Initialization
     orchestrator = ChatOrchestrator() 
     metrics_embedder = QueryEmbedder() 
-    judge_adapter = WorkingAdapter(config_path=os.path.join(BASE_DIR, 'config.ini'))
+    judge_adapter = create_llm_adapter(temperature=0.0) # Low temperature for deterministic judging
     
     ## Get scenarios
     scenarios = load_scenarios(SCENARIO_FILE)

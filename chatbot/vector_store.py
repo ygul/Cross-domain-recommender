@@ -32,6 +32,7 @@ class SearchResult:
     score: float
     document: str | None
     metadata: dict[str, Any] | None
+    embedding: list[float] | None = None  # The actual embedding vector of the found item
 
 
 class VectorStore:
@@ -56,29 +57,33 @@ class VectorStore:
         res = self._collection.query(
             query_embeddings=[query_embedding],
             n_results=k,
-            include=["documents", "metadatas", "distances"],
+            include=["documents", "metadatas", "distances", "embeddings"],
         )
 
         ids = res.get("ids") or [[]]
         docs = res.get("documents") or [[]]
         metas = res.get("metadatas") or [[]]
         dists = res.get("distances") or [[]]
+        embeds = res.get("embeddings") or [[]]
 
         ids = ids[0] if ids else []
         docs = docs[0] if docs else []
         metas = metas[0] if metas else []
         dists = dists[0] if dists else []
+        embeds = embeds[0] if embeds else []
 
         results: list[SearchResult] = []
         for i in range(len(ids)):
             dist = float(dists[i]) if i < len(dists) else 0.0
             metadata = dict(metas[i]) if i < len(metas) and metas[i] is not None else None
+            embedding = list(embeds[i]) if i < len(embeds) and embeds[i] is not None else None
             results.append(
                 SearchResult(
                     id=str(ids[i]),
                     score=dist,            # Note: Chroma returns distance (lower = closer) depending on metric
                     document=docs[i] if i < len(docs) else None,
                     metadata=metadata,
+                    embedding=embedding,
                 )
             )
         return results
@@ -108,29 +113,33 @@ class VectorStore:
             query_embeddings=[query_embedding],
             n_results=k,
             where=where,
-            include=["documents", "metadatas", "distances"],
+            include=["documents", "metadatas", "distances", "embeddings"],
         )
 
         ids = res.get("ids") or [[]]
         docs = res.get("documents") or [[]]
         metas = res.get("metadatas") or [[]]
         dists = res.get("distances") or [[]]
+        embeds = res.get("embeddings") or [[]]
 
         ids = ids[0] if ids else []
         docs = docs[0] if docs else []
         metas = metas[0] if metas else []
         dists = dists[0] if dists else []
+        embeds = embeds[0] if embeds else []
 
         results: list[SearchResult] = []
         for i in range(len(ids)):
             dist = float(dists[i]) if i < len(dists) else 0.0
             metadata = dict(metas[i]) if i < len(metas) and metas[i] is not None else None
+            embedding = list(embeds[i]) if i < len(embeds) and embeds[i] is not None else None
             results.append(
                 SearchResult(
                     id=str(ids[i]),
                     score=dist,
                     document=docs[i] if i < len(docs) else None,
                     metadata=metadata,
+                    embedding=embedding,
                 )
             )
         return results

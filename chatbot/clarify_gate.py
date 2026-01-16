@@ -235,3 +235,15 @@ class ClarifyGate:
 
     def _fallback_final_query(self, user_seed: str, turns: list[Turn]) -> str:
         return _combined_text(user_seed, turns)
+
+    def generate_single_turn(self, user_seed: str, current_context: str, history: List[str]) -> str:
+        """
+        Public wrapper to generate a single question based on context.
+        Used by ChatOrchestrator for Iterative Search.
+        """
+        decision = self._llm_decide(user_seed + f"\nContext Summary: {current_context[:500]}...", [], 1)
+        
+        if not decision or decision.get("action") == "stop":
+            return "NO_QUESTION"
+        
+        return decision.get("question", "NO_QUESTION")

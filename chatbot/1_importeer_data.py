@@ -67,8 +67,15 @@ if DB_ROOT.exists():
 print(f"📦 Aanmaken nieuwe database: {DB_ROOT}")
 client = chromadb.PersistentClient(path=str(DB_ROOT))
 
+# Lees beide embedding modellen uit config
+model_1 = config["AI"]["model_embedding"]
+model_alternative = config["AI"]["model_embedding_alternative"]
+
+print(f"🔤 Model 1: {model_1}")
+print(f"🔤 Model alternative: {model_alternative}")
+
 ef = embedding_functions.SentenceTransformerEmbeddingFunction(
-    model_name="paraphrase-multilingual-MiniLM-L12-v2"
+    model_name=model_1
 )
 
 collection_name = config["BESTANDEN"]["collectie_naam"]
@@ -83,7 +90,7 @@ collection = client.get_or_create_collection(
 
 # Voor een tweede model
 ef2 = embedding_functions.SentenceTransformerEmbeddingFunction(
-    model_name="sentence-transformers/all-MiniLM-L6-v2"
+    model_name=model_alternative
 )
 
 collection_name_model2 = config["BESTANDEN"]["collectie_naam_model2"]

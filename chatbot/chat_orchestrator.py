@@ -1,18 +1,23 @@
 from __future__ import annotations
 
-from typing import Literal, Optional, Tuple, Set
+from typing import Literal, Optional, Tuple
 
 from query_embedder import QueryEmbedder
 from vector_store import VectorStore
 import llm_adapter
 from results_formatter import format_results
 
-# VERANDERING: 'Turn' toegevoegd aan de imports
-from clarify_gate import ClarifyGate, ElicitationResult, Turn
+from clarify_gate import ClarifyGate, ElicitationResult
 from elicitation_logger import ElicitationLogger
 
 
 ItemType = Literal["Book", "TV series", "movie"]
+
+
+# Usage note:
+# - Per call, pass use_alternative_collection=True to chat()/run_once() to query the
+#   alternative Chroma collection (e.g., model2); omit or False for the primary.
+# - You can flip this flag each call to compare collections without code changes.
 
 class ChatOrchestrator:
     def __init__(
@@ -47,16 +52,17 @@ class ChatOrchestrator:
             ElicitationLogger(base_dir=logs_dir) if enable_logging else None
         )
         
+        # Store last search results for external access (e.g., by judge module)
         self.last_search_results = []
 
     def run_once(
         self,
         user_input: str,
-        item_types: Set[ItemType] | None = None,
+        item_types: set[ItemType] | None = None,
         use_alternative_collection: bool | None = None,
     ) -> str:
         """
-        Retrieve + format results for one query.
+        Retrieve + format results for one query (no elicitation here).
         """
         effective_alt = bool(use_alternative_collection) if use_alternative_collection is not None else False
         store = self.vector_store_alternative if effective_alt else self.vector_store
@@ -78,121 +84,108 @@ class ChatOrchestrator:
                 where=where_filter,
             )
 
+        # Store results for external access
         self.last_search_results = results
+
         return format_results(user_input, results, self.llm_adapter)
 
     def chat(
         self,
         seed: str,
-        item_types: Set[ItemType] | None = None,
+        item_types: set[ItemType] | None = None,
         input_fn=input,
         print_fn=print,
         use_alternative_collection: bool | None = None,
     ) -> Tuple[str, Optional[ElicitationResult]]:
         """
-        Full chat flow WITH Iterative Search & Query Rewriting.
+        Full chat flow (design-aligned):
+        seed -> optional ClarifyGate (0/1/2 questions) -> log -> retrieval+format
+
+        Args:
+            seed: User input text
+            item_types: Optional item-type filter
+            input_fn, print_fn: I/O hooks for CLI
+            use_alternative_collection: Per-call override; True queries the alternative collection/model,
+                False the primary; None uses the primary collection/model by default.
+
+        Returns:
+          (formatted_output, elicitation_result_or_None)
         """
         seed = (seed or "").strip()
         if seed == "":
-            return "Empty input.", None
+            return "Empty input. Please provide a description of what you're looking for.", None
 
-        elicited_turns = []
+        elicited: Optional[ElicitationResult] = None
         final_query = seed
-        
-        # 1. Eerste keer zoeken (Initial Context)
-        current_context_formatted = self.run_once(seed, item_types, use_alternative_collection)
-        
-        history = [seed]
 
         if self.clarify_gate is not None:
-            # Loop voor max 2 vragen
-            for i in range(2): 
-                
-                # A. Genereer vraag
-                question = self.clarify_gate.generate_single_turn(seed, current_context_formatted, history)
-                
-                if "NO_QUESTION" in question:
-                    print_fn("[DEBUG] Gate decided to stop asking questions.")
-                    break
-                
-                print_fn(f"\n[Bot]: {question}")
-                # Let op: we voegen hem nog niet toe aan elicited_turns, dat doen we pas als we het antwoord hebben
-
-                # B. Vang antwoord
-                user_response = input_fn(question)
-                print_fn(f"[DEBUG] User answer: {user_response}")
-
-                # VERANDERING: Maak een Turn object aan!
-                current_turn = Turn(question=question, answer=user_response)
-                elicited_turns.append(current_turn)
-                
-                # --- C. QUERY REWRITING ---
-                system_prompt = (
-                    "Act as a Search Optimizer for a recommender system.\n"
-                    "Combine the 'Core Subject' from the Original Request with the 'Style/Mood' from the User Feedback.\n"
-                    "RULES:\n"
-                    "1. PRESERVE the main noun/subject from the Original Request (e.g. if user asked for 'lawyer', you MUST include 'lawyer').\n"
-                    "2. Add the style keywords from the feedback.\n"
-                    "3. Remove conversational filler.\n"
-                    "4. Output ONLY the new query string."
-                )
-
-                user_prompt = (
-                    f"Original Request (Core Subject): {seed}\n"
-                    f"User Feedback (Style/Mood): {user_response}\n\n"
-                    f"Optimized Query:"
-                )
-
-                #system_prompt = (
-                #    "Act as a Search Optimizer.\n"
-                #    "Rewrite the search query based on the Original Request and the new User Feedback.\n"
-                #    "RULES:\n"
-                #    "1. Focus on atmosphere, genre, and specific keywords.\n"
-                #    "2. Remove conversational fillers.\n"
-                #    "3. Output ONLY the new query string."
-                #)
-
-                #user_prompt = (
-                #    f"Original Request: {seed}\n"
-                #    f"User Feedback: {user_response}\n\n"
-                #    f"Optimized Query:"
-                #)
-                
-                if hasattr(self.llm_adapter, 'generate'):
-                     refined_query = self.llm_adapter.generate(system_prompt, user_prompt)
-                else:
-                     refined_query = self.llm_adapter.chat_completion(system_prompt, user_prompt)
-
-                refined_query = refined_query.replace('"', '').replace("Optimized Query:", "").strip()
-                
-                print_fn(f"[DEBUG] Iteration {i+1} - Rewritten Query: '{refined_query}'")
-                
-                final_query = refined_query
-                history.append(f"User Answer: {user_response}")
-                
-                # D. ITERATIVE SEARCH
-                current_context_formatted = self.run_once(final_query, item_types, use_alternative_collection)
+            elicited = self.clarify_gate.run(seed, input_fn=input_fn, print_fn=print_fn)
+            final_query = elicited.final_query
 
         if self.logger is not None:
             self.logger.log(
                 user_seed=seed,
-                turns=elicited_turns,
+                turns=[] if elicited is None else elicited.turns,
                 final_query=final_query,
                 item_types=item_types,
             )
 
-        result_obj = ElicitationResult(
-            final_query=final_query,
-            turns=elicited_turns
-        )
-
-        return current_context_formatted, result_obj
+        formatted = self.run_once(final_query, item_types=item_types, use_alternative_collection=use_alternative_collection)
+        # Note: last_search_results is already set by run_once()
+        return formatted, elicited
     
     def get_last_search_results(self):
-        return self.last_search_results.copy()
+        """
+        Get the vector search results from the last run_once() or chat() call.
+        
+        Returns:
+            list: List of search results with metadata, distances, and documents.
+                  Empty list if no searches have been performed yet.
+                  
+        Example:
+            >>> orchestrator = ChatOrchestrator()
+            >>> response = orchestrator.run_once("science fiction books")
+            >>> results = orchestrator.get_last_search_results()
+            >>> print(f"Found {len(results)} results")
+            >>> for result in results:
+            ...     print(f"Distance: {result['distance']}, Title: {result['metadata']['title']}")
+        """
+        return self.last_search_results.copy()  # Return copy to prevent external modification
     
     def get_primary_query_embedder(self) -> QueryEmbedder:
+        """
+        Get the primary embedding model instance.
+        
+        Returns the QueryEmbedder configured with the primary collection's embedding model
+        (typically paraphrase-multilingual-MiniLM-L12-v2). This embedder is used for all
+        queries when use_alternative_collection=False or is not specified.
+        
+        Returns:
+            QueryEmbedder: The primary embedder instance with the model used by the main collection.
+            
+        Example:
+            >>> orchestrator = ChatOrchestrator()
+            >>> embedder = orchestrator.get_primary_embedder()
+            >>> vector = embedder.embed("science fiction books")
+            >>> print(f"Embedding dimension: {len(vector)}")
+        """
         return self.embedder_primary
     
     def get_alternative_query_embedder(self) -> QueryEmbedder:
+        """
+        Get the alternative embedding model instance.
+        
+        Returns the QueryEmbedder configured with the alternative collection's embedding model
+        (typically sentence-transformers/all-MiniLM-L6-v2). This embedder is used for all
+        queries when use_alternative_collection=True is specified.
+        
+        Returns:
+            QueryEmbedder: The alternative embedder instance with the model used by the alternative collection.
+            
+        Example:
+            >>> orchestrator = ChatOrchestrator()
+            >>> embedder = orchestrator.get_alternative_embedder()
+            >>> vector = embedder.embed("science fiction books")
+            >>> print(f"Embedding dimension: {len(vector)}")
+        """
         return self.embedder_alternative

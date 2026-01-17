@@ -12,10 +12,16 @@ warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 # Config & paden
 # -------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent
-REPO_ROOT = BASE_DIR.parents[0]
+REPO_ROOT = BASE_DIR  # script staat in project-root; niet naar de parent van de repo gaan
 
-CONFIG_PATH = BASE_DIR / "config.ini"
-excel_path = REPO_ROOT / "data" / "complete dataset.xlsx"
+CONFIG_PATH = REPO_ROOT / "config.ini"
+
+# Accepteer beide veelvoorkomende namen (README vs huidige code)
+excel_candidates = [
+    REPO_ROOT / "data" / "raw" / "complete_dataset.xlsx",
+    REPO_ROOT / "data" / "raw" / "complete dataset.xlsx",
+]
+excel_path = next((p for p in excel_candidates if p.exists()), excel_candidates[0])
 
 config = configparser.ConfigParser()
 
@@ -28,7 +34,7 @@ if "BESTANDEN" not in config:
     raise KeyError(f"[BESTANDEN] ontbreekt in {CONFIG_PATH}. Gevonden secties: {config.sections()}")
 
 DB_ROOT = (BASE_DIR / config["BESTANDEN"]["database_mapnaam"]).resolve()
-DATA_DIR = DB_ROOT / "data"
+DATA_DIR = DB_ROOT / "data" / "raw"
 
 print(f"Chroma DB root: {DB_ROOT}")
 print(f"Data map: {DATA_DIR}")
@@ -36,8 +42,9 @@ print(f"Data map: {DATA_DIR}")
 print(f"📄 Excel inlezen vanaf: {excel_path}")
 if not excel_path.exists():
     raise FileNotFoundError(
-        f"Excel bestand niet gevonden: {excel_path}\n"
-        f"Zorg dat het bestand bestaat op: {REPO_ROOT / 'data' / 'complete dataset.xlsx'}"
+        "Excel bestand niet gevonden. Geprobeerd:\n"
+        + "\n".join(f"- {p}" for p in excel_candidates)
+        + "\n\nZorg dat één van deze bestanden bestaat."
     )
 
 df = pd.read_excel(excel_path)

@@ -16,9 +16,9 @@ experiment/chromadb/.venv/
 *.bin
 experiment/chromadb/data/
 
-# Ignore generated charts
+# Ignore generated charts and output Excel sheets
 charts/
-
+rag_evaluation_final.xlsx
 
 # Python standaard negeren
 __pycache__/
@@ -42,3 +42,4 @@ __pycache__/
 
 # Logs
 logs/
+

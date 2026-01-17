@@ -285,7 +285,7 @@ def run_similarity_smoke_test():
     try:
         # Import here to avoid circular imports
         from chat_orchestrator import ChatOrchestrator
-        orchestrator = ChatOrchestrator(enable_clarify_gate=False, enable_logging=False)
+        orchestrator = ChatOrchestrator(enable_clarify_gate=False)
         print("✅ ChatOrchestrator initialized successfully")
         
         # Ask user which embedding model to use

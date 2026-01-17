@@ -8,7 +8,6 @@ import llm_adapter
 from results_formatter import format_results
 
 from clarify_gate import ClarifyGate, ElicitationResult
-from elicitation_logger import ElicitationLogger
 
 
 ItemType = Literal["Book", "TV series", "movie"]
@@ -26,8 +25,6 @@ class ChatOrchestrator:
         max_items: int = 3,
         enable_clarify_gate: bool = True,
         clarify_max_questions: int = 2,
-        enable_logging: bool = True,
-        logs_dir: str = "logs",
     ) -> None:
         self.llm_adapter = llm_adapter.create_llm_adapter(provider=llm_provider)
         self.vector_store = VectorStore()
@@ -46,10 +43,6 @@ class ChatOrchestrator:
             ClarifyGate(llm=self.llm_adapter, max_questions=clarify_max_questions)
             if enable_clarify_gate
             else None
-        )
-
-        self.logger: Optional[ElicitationLogger] = (
-            ElicitationLogger(base_dir=logs_dir) if enable_logging else None
         )
         
         # Store last search results for external access (e.g., by judge module)
@@ -121,14 +114,6 @@ class ChatOrchestrator:
         if self.clarify_gate is not None:
             elicited = self.clarify_gate.run(seed, input_fn=input_fn, print_fn=print_fn)
             final_query = elicited.final_query
-
-        if self.logger is not None:
-            self.logger.log(
-                user_seed=seed,
-                turns=[] if elicited is None else elicited.turns,
-                final_query=final_query,
-                item_types=item_types,
-            )
 
         formatted = self.run_once(final_query, item_types=item_types, use_alternative_collection=use_alternative_collection)
         # Note: last_search_results is already set by run_once()

@@ -27,8 +27,6 @@ def main():
         llm_provider="openai",
         enable_clarify_gate=True,
         clarify_max_questions=2,
-        enable_logging=True,
-        logs_dir="logs",
     )
 
     tests = [

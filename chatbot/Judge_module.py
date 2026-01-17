@@ -63,11 +63,13 @@ def main():
     print("   2. Alternative model")
     choice = input("Enter 1 or 2 [default: 1]: ").strip()
     
-    if choice == "2":
-        print("Using ALTERNATIVE embedder for metrics calculation")    
+    use_alternative = choice == "2"
+    
+    if use_alternative:
+        print("Using ALTERNATIVE embedder for search and metrics calculation")    
         metrics_embedder = orchestrator.get_alternative_query_embedder()  # Use alternative embedder
     else:
-        print("Using PRIMARY embedder for metrics calculation")
+        print("Using PRIMARY embedder for search and metrics calculation")
         metrics_embedder = orchestrator.get_primary_query_embedder()  # Get primary embedder from orchestrator
 
     judge_adapter = create_llm_adapter(temperature=0.0) # Low temperature for deterministic judging
@@ -91,8 +93,8 @@ def main():
 
         print("\n Single turn mode")
         
-        # De orchestrator voert 1 keer de zoekslag uit
-        single_turn_response = orchestrator.run_once(scenario['seed'])
+        # De orchestrator voert 1 keer de zoekslag uit met de gekozen collectie
+        single_turn_response = orchestrator.run_once(scenario['seed'], use_alternative_collection=use_alternative)
         
         # Get the actual vector search results that were used
         search_results_singleturn = orchestrator.get_last_search_results()
@@ -116,7 +118,8 @@ def main():
         multi_turn_response_text, result_obj = orchestrator.chat(
             seed=scenario['seed'], 
             input_fn=automated_input_hook,
-            print_fn=print # Show chatbot questions in console
+            print_fn=print, # Show chatbot questions in console
+            use_alternative_collection=use_alternative
         )
 
         # Get the actual vector search results that were used

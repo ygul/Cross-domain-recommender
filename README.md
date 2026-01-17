@@ -56,6 +56,29 @@ Ensure `config.ini` is in sync with your database paths and collection name.
 
 ---
 
+## Usage
+
+The project includes a `run.sh` script to automate setup and execution. This script will automatically create a virtual environment and install dependencies if they are missing.
+
+### 1. Data Ingestion
+Initializes the database, imports data, and generates embeddings.
+```bash
+./run.sh ingest
+```
+
+### 2. Chat Interface
+Starts the interactive CLI chatbot (Human Mode).
+```bash
+./run.sh chat
+```
+
+### 3. Evaluation
+Runs the automated LLM-as-a-Judge evaluation (Evaluation Mode).
+```bash
+./run.sh eval
+```
+
+---
 ## Project Structure
 
 ```text
@@ -77,14 +100,16 @@ Cross-domain-recommender/
 │   └── working_adapter.py          # Adapter implementation
 ├── data/
 │   ├── chromadb/                   # Vector database storage
+│   ├── output/                     # Generated files
 │   └── raw/                        # Original source files
 ├── design/                         # Design documents and diagrams
 ├── notebook/                       # Jupyter notebooks
 │   └── generate_enriched_descriptions.ipynb
-├── output/                         # Generated files
-├── 1_importeer_data.py             # Script to import data
-├── 2_check_en_visualiseer.py       # Script to check and visualize data
+├── ChromaDualModelImporter.py      # Script to import data
+├── ChromaEmbeddingVisualizer.py    # Script to check and visualize data
 ├── config.ini                      # Configuration
+├── LICENSE                         # License
 ├── requirements.txt                # Dependencies
 ├── run.sh                          # Shell script to run the project
 └── README.md
+```

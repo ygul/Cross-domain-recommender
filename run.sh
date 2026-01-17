@@ -31,21 +31,21 @@ echo "📦 Dependencies checken..."
 
 if [ "$1" == "ingest" ]; then
     echo "📥 Start Data Ingestie..."
-    "$PY" -u 1_importeer_data.py
-    "$PY" -u 2_check_en_visualiseer.py
+    "$PY" -u chatbot/1_importeer_data.py
+    "$PY" -u chatbot/2_check_en_visualiseer.py
 
 elif [ "$1" == "eval" ]; then
     echo "⚖️  Start Evaluatie (LLM Judge)..."
     # AANGEPAST: Direct het bestand aanroepen, geen submap
-    "$PY" -u Judge_module.py
+    "$PY" -u chatbot/Judge_module.py
 
 elif [ "$1" == "chat" ]; then
     echo "💬 Start Chat Interface..."
     # AANGEPAST: Direct het bestand aanroepen
     if command -v winpty &> /dev/null; then
-        winpty "$PY" -u chat_orchestrator.py
+        winpty "$PY" -u chatbot/chat_ui_cli.py
     else
-        "$PY" -u chat_orchestrator.py
+        "$PY" -u chatbot/chat_ui_cli.py
     fi
 
 else

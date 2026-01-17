@@ -135,7 +135,7 @@ class ClarifyGate:
             final_query = decision.get("final_query")
 
             if action == "ask" and remaining > 0 and isinstance(question, str) and question.strip():
-                q = self._ensure_examples_block(question.strip())
+                q = question.strip()
                 
                 # --- FIX START: Correct handling of input_fn for Simulated User ---
                 print_fn("\n" + q)
@@ -167,23 +167,6 @@ class ClarifyGate:
             return ElicitationResult(final_query=synthesized, turns=turns)
 
         return ElicitationResult(final_query=self._fallback_final_query(user_seed, turns), turns=turns)
-
-    def _ensure_examples_block(self, text: str) -> str:
-        t = text.strip()
-        has_examples_line = "examples (feel free to answer differently):" in t.lower()
-        has_bullets = ("\n- " in t) or ("\n• " in t) or ("\n* " in t)
-
-        if has_examples_line and has_bullets:
-            return t
-
-        suffix = [
-            "Examples (feel free to answer differently):",
-            "- more introspective and subtle",
-            "- darker and heavier",
-            "- lighter and hopeful",
-            "- slower and contemplative",
-        ]
-        return t + "\n" + "\n".join(suffix)
 
     def _llm_decide(self, user_seed: str, turns: list[Turn], remaining: int) -> Optional[dict]:
         user_prompt = _build_user_prompt(user_seed, turns, remaining)

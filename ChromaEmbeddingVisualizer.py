@@ -39,6 +39,9 @@ if not collections:
 
 print(f"✔ Aantal collecties: {len(collections)}")
 
+OUTPUT_DIR = BASE_DIR / "data" / "output" / "charts"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
 # -------------------------------------------------
 # Visualisatie per collectie
 # -------------------------------------------------
@@ -75,7 +78,7 @@ for collection in collections:
     plt.grid(True)
     plt.tight_layout()
 
-    filename = f"visualisatie_{collection.name}.png"
+    filename = OUTPUT_DIR / f"visualisatie_{collection.name}.png"
     plt.savefig(filename)
     print(f"✔ {filename} opgeslagen")
     plt.close()

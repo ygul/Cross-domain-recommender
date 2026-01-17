@@ -37,6 +37,25 @@ The system supports two modes of interaction:
 
 ---
 
+## Installation
+
+```bash
+python -m venv .venv
+source .venv/bin/activate 
+pip install -r requirements.txt
+```
+
+### Configure environment
+Create a `.env` file in the project root with your API credentials:
+```text
+OPENAI_API_KEY=your_key_here
+```
+
+### Configure database
+Ensure `config.ini` is in sync with your database paths and collection name.
+
+---
+
 ## Project Structure
 
 ```text

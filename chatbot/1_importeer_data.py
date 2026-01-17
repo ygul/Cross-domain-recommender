@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = BASE_DIR.parents[0]
 
 CONFIG_PATH = BASE_DIR / "config.ini"
-excel_path = REPO_ROOT / "experiment" / "notebook" / "complete dataset.xlsx"
+excel_path = REPO_ROOT / "data" / "complete dataset.xlsx"
 
 config = configparser.ConfigParser()
 

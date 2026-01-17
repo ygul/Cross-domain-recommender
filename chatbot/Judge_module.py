@@ -178,8 +178,6 @@ def main():
             "RRI (Intent Sim)": round(rri_cos_sim, 4),
             "Turns Used": len(result_obj.turns) if result_obj else 0
         })
-        
-        time.sleep(1) # Rate limit
 
     ## Export
 

@@ -186,10 +186,13 @@ def main():
 
     if results_data:
         df = pd.DataFrame(results_data)
-        output_file = BASE_DIR / "rag_evaluation_final.xlsx"
+        output_dir = BASE_DIR.parent / "data" / "output"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        output_file = output_dir / "rag_evaluation_final.xlsx"
         df.to_excel(output_file, index=False)
         print(f"\nEvaluation Complete. Results saved to {output_file}")
-        
+
         # Generate comprehensive reports and visualizations
         from report_generator import EvaluationReportGenerator
         print("\n" + "="*60)

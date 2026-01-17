@@ -25,8 +25,8 @@ class EvaluationReportGenerator:
         """
         if excel_file_path is None:
             base_dir = Path(__file__).resolve().parent
-            excel_file_path = base_dir / "rag_evaluation_final.xlsx"
-        
+            excel_file_path = base_dir.parent / "data" / "output" / "rag_evaluation_final.xlsx"
+
         self.excel_file_path = Path(excel_file_path)
         self.charts_dir = self.excel_file_path.parent / "charts"
         self.df = None

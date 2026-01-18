@@ -4,6 +4,21 @@ set -e
 # Zorg dat we in de juiste map zitten
 cd "$(dirname "$0")"
 
+# ----------------------------------------
+# Laad .env als die bestaat (lokaal)
+# ----------------------------------------
+if [ -f ".env" ]; then
+  echo "🔐 .env geladen"
+  export $(grep -v '^\s*#' .env | grep -v '^\s*$' | xargs)
+else
+  echo "⚠️ Geen .env bestand gevonden (optioneel)."
+fi
+
+# OPENAI_API_KEY aanwezigheidstest
+if [ -z "${OPENAI_API_KEY:-}" ]; then
+  echo "⚠️ OPENAI_API_KEY is niet gezet. Zet dit in .env of als environment variable."
+fi
+
 VENV_DIR=".venv"
 
 # 1. Check of .venv bestaat, zo niet: maak aan
@@ -24,7 +39,7 @@ PY="python"
 # 3. Installeer dependencies (stil)
 echo "📦 Dependencies checken..."
 "$PY" -m pip install --upgrade pip > /dev/null
-"$PY" -m pip install chromadb sentence-transformers huggingface_hub python-dotenv openai pandas openpyxl matplotlib scikit-learn seaborn> /dev/null
+"$PY" -m pip install chromadb sentence-transformers huggingface_hub python-dotenv openai pandas openpyxl matplotlib scikit-learn seaborn > /dev/null
 
 # 4. Run commands
 # Let op: ik heb 'chatbot/' weggehaald voor de bestandsnamen

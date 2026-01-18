@@ -17,6 +17,8 @@ fi
 # OPENAI_API_KEY aanwezigheidstest
 if [ -z "${OPENAI_API_KEY:-}" ]; then
   echo "⚠️ OPENAI_API_KEY is niet gezet. Zet dit in .env of als environment variable."
+else
+  echo "✅ OPENAI_API_KEY is gevonden in de environment."
 fi
 
 VENV_DIR=".venv"
@@ -51,12 +53,10 @@ if [ "$1" == "ingest" ]; then
 
 elif [ "$1" == "eval" ]; then
     echo "⚖️  Start Evaluatie (LLM Judge)..."
-    # AANGEPAST: Direct het bestand aanroepen, geen submap
     "$PY" -u chatbot/Judge_module.py
 
 elif [ "$1" == "chat" ]; then
     echo "💬 Start Chat Interface..."
-    # AANGEPAST: Direct het bestand aanroepen
     if command -v winpty &> /dev/null; then
         winpty "$PY" -u chatbot/chat_ui_cli.py
     else

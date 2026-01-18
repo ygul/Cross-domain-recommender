@@ -22,7 +22,7 @@ if "BESTANDEN" not in config:
     raise KeyError(f"[BESTANDEN] ontbreekt in {CONFIG_PATH}. Gevonden secties: {config.sections()}")
 
 DB_ROOT = (BASE_DIR / config["BESTANDEN"]["database_mapnaam"]).resolve()
-DATA_DIR = DB_ROOT / "data"
+DATA_DIR = DB_ROOT / "data" / "raw"
 
 print(f"Chroma DB root: {DB_ROOT}")
 

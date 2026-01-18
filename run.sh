@@ -31,8 +31,8 @@ echo "📦 Dependencies checken..."
 
 if [ "$1" == "ingest" ]; then
     echo "📥 Start Data Ingestie..."
-    "$PY" -u ChromaEmbeddingVisualizer.py
     "$PY" -u ChromaDualModelImporter.py
+    "$PY" -u ChromaEmbeddingVisualizer.py
 
 elif [ "$1" == "eval" ]; then
     echo "⚖️  Start Evaluatie (LLM Judge)..."

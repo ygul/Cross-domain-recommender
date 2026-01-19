@@ -5,6 +5,7 @@ This module provides evaluation metrics and LLM-as-a-Judge functionality
 for assessing recommendation quality in the cross-domain recommender system.
 """
 
+import re  # <--- NEW: Added for regex parsing
 from typing import Tuple
 from llm_adapter import LLMAdapter, create_llm_adapter
 
@@ -18,6 +19,31 @@ USR_RUBRIC = """
 - Score 4 (Good): Captures most intent elements with appropriate mood/style, but may have minor gaps or less optimal choices.
 - Score 5 (Excellent): Perfect alignment - recommendations precisely fulfill the implicit need with ideal mood, style, and specificity.
 """
+
+# --- NEW HELPER FUNCTION ---
+def extract_score(text: str) -> float:
+    """
+    Extracts the first floating point number or integer from a string.
+    Examples:
+        "Score: 4.5" -> 4.5
+        "4" -> 4.0
+        "The score is 3.5 because..." -> 3.5
+    """
+    if not text:
+        return 0.0    
+    
+    match = re.search(r"(\d+(\.\d+)?)", str(text)) # Regex for a number (4, 4.5, 4.0)
+
+    if match:
+        try:
+            val = float(match.group(1))
+            if val > 5.0:
+                return 5.0 
+            return val
+        except ValueError:
+            return 0.0
+    return 0.0
+# ---------------------------
 
 def evaluate_usr(hidden_intent: str, model_response: str, llm_adapter: LLMAdapter) -> Tuple[float, str]:
     """
@@ -61,42 +87,56 @@ def evaluate_usr(hidden_intent: str, model_response: str, llm_adapter: LLMAdapte
     
     raw_output = llm_adapter.generate(system_prompt, user_prompt)
     
-    # Scoring + motivation
+    # Default values
     score = 1.0
     reason = "Parse error"
     
     try:
         lines = raw_output.split('\n')
+        found_score = False
+
         for line in lines:
-            if "SCORE:" in line:
-                score_str = line.split("SCORE:")[1].strip()
-                # Extract decimal score (e.g., "4.5" from "4.5 (Good)")
-                score_parts = score_str.split()[0]
-                score = float(score_parts)
+            # 1. Look for explicit "SCORE:" line
+            if "SCORE:" in line.upper():
+                score_part = line.split("SCORE:")[1].strip()
+                score = extract_score(score_part) # <--- UPDATED: Uses helper
+                found_score = True
  
-            if "REASON:" in line:
+            # 2. Extract Reason
+            if "REASON:" in line.upper():
                 reason = line.split("REASON:")[1].strip()
 
-            if "INDIVIDUAL SCORES:" in line:
-                # Currently not used, but could be logged if needed
-                individual_scores_str = line.split("INDIVIDUAL SCORES:")[1].strip()
-                individual_scores = [s.strip() for s in individual_scores_str.split(',')]
-        
-        # Fallback als REASON niet op een nieuwe regel staat
-        if reason == "Parse error" and len(lines) > 0:
-            reason = raw_output.replace('\n', ' ')
-            
-    except Exception as e:
-        print(f"Judge parse warning: {raw_output} - Error: {e}")
+            # 3. Handle Individual Scores (Optional override)
+            if "INDIVIDUAL SCORES:" in line.upper():
+                try:
+                    ind_part = line.split("INDIVIDUAL SCORES:")[1].strip()
+                    # Clean up string (remove brackets if present) and split
+                    ind_part = ind_part.replace('[', '').replace(']', '')
+                    parts = ind_part.split(',')
+                    
+                    scores_list = []
+                    for p in parts:
+                        s = extract_score(p)
+                        if s > 0:
+                            scores_list.append(s)
+                    
+                    if scores_list:
+                        score = sum(scores_list) / len(scores_list)
+                        found_score = True
+                except Exception:
+                    pass # Fallback to main score if individual parsing fails
 
-    # If individual scores are given, average them and override the main score.
-    if 'individual_scores' in locals() and individual_scores:
-        try:
-            individual_scores_float = [float(s) for s in individual_scores]
-            avg_individual_score = sum(individual_scores_float) / len(individual_scores_float)
-            score = avg_individual_score
-        except ValueError:
-            print("Warning: Could not parse individual scores to float.")
+        # Fallback: If no "SCORE:" tag was found, try to find ANY number in the first few lines
+        if not found_score:
+            score = extract_score(raw_output)
+
+        # Fallback for reason
+        if reason == "Parse error" and len(lines) > 0:
+            # If we didn't find "REASON:", just take the whole text (excluding the score line if possible)
+            reason = raw_output.replace('\n', ' ')
+
+    except Exception as e:
+        print(f"Judge parse warning: {raw_output[:100]}... - Error: {e}")
 
     return score, reason
 
@@ -112,12 +152,6 @@ def calculate_average_similarity(hidden_intent_text, search_results, embedder):
         
     Returns:
         float: Average similarity score, or 0.0 if no valid embeddings
-        
-    Examples:
-        >>> from query_embedder import QueryEmbedder
-        >>> embedder = QueryEmbedder()
-        >>> avg_sim = calculate_average_similarity("science fiction", search_results, embedder)
-        >>> print(f"Average similarity: {avg_sim:.3f}")
     """
     if not search_results or not hidden_intent_text:
         return 0.0

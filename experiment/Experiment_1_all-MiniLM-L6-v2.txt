@@ -1,0 +1,1060 @@
+ Running chatbot evaluation using LLM-as-a-Judge
+
+Which embedding model would you like to use for metrics calculation?
+   1. Primary model
+   2. Alternative model
+Enter 1 or 2 [default: 1]: 2
+Using ALTERNATIVE embedder for search and metrics calculation
+Loaded 20 scenarios from /home/george/Cross-domain-recommender/chatbot/test_scenarios.txt
+
+============================================================
+SCENARIO 1: I want madness.
+HIDDEN INTENT: I want the book 'The Shining'. Atmosphere: oppressive, isolating, and maddening. Setting: a remote and snowed-in hotel. Theme: madness and ghosts.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Seven Masterpieces of Gothic Horror (Book)  
+Similarity: Good match (0.399)  
+This collection delves into the eerie realms of Gothic horror, where reality blurs with the supernatural, exploring themes of madness and the fragile psyche.  
+Relation with your query: It directly addresses the concept of madness through chilling tales and psychological exploration.
+
+2. Buy Jupiter and Other Stories (Book)  
+Similarity: Moderate match (0.425)  
+A collection of stories that traverse human experience, blending the mundane with the extraordinary, while provoking thought about existence and ethical dilemmas.  
+Relation with your query: It touches on the complexities of the human mind and reality, though less focused on madness specifically.
+
+3. Westworld (TV series)  
+Similarity: Moderate match (0.463)  
+Set in a futuristic amusement park, this series explores the awakening of artificial beings and the darker aspects of human desire, morality, and free will.  
+Relation with your query: It examines psychological themes and the nature of consciousness, but is more about technology than madness itself.
+
+ Multi turn mode
+
+Are you looking for a chaotic adventure filled with surreal imagery and bizarre characters, or a psychological exploration of the mind that delves into themes of obsession and instability?
+[Simulated user answer]: Psychological exploration of madness
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Seven Masterpieces of Gothic Horror (Book)  
+Similarity: Good match (0.346)  
+This anthology immerses readers in Gothic horror, exploring themes of madness, isolation, and the supernatural. The stories delve into the fragile psyche of humanity, blurring the line between reality and the uncanny.  
+Relation with your query: It closely aligns with your interest in psychological themes and the exploration of sanity.
+
+2. Inception (Movie)  
+Similarity: Good match (0.389)  
+In this film, a skilled thief navigates the subconscious to implant an idea, facing challenges that blur the lines between dreams and reality. The narrative explores deep psychological themes, including guilt and redemption.  
+Relation with your query: It resonates with your focus on the human mind's complexities and the quest for self-discovery.
+
+3. Second Fontana Book of Great Horror Stories (Book)  
+Similarity: Moderate match (0.414)  
+This collection features unsettling tales that explore the darker aspects of the human psyche, with characters confronting their fears and the supernatural. The stories evoke a sense of dread and introspection.  
+Relation with your query: It shares themes of psychological tension and the exploration of inner demons, though with a broader horror focus.
+
+[Calculating Metrics]
+- Judge scores: Single 2.50/5 | Multi 3.00/5 | RRI: 0.50
+- Intent similarity     : Single 0.381 | Multi 0.430
+
+============================================================
+SCENARIO 2: I am looking for a gangster movie.
+HIDDEN INTENT: I am looking for the movie 'The Godfather'. Atmosphere: dark, tense, and serious. Setting: the New York underworld. Theme: family, loyalty, and organized crime.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Once Upon a Time in America (movie)  
+Similarity: Moderate match (0.538)  
+This film explores the life of a former Jewish gangster in 1920s Manhattan, dealing with themes of ambition, betrayal, and the haunting memories of his past.  
+Relation with your query: This is a classic gangster movie that delves into the complexities of crime and redemption.
+
+2. The Outsider (TV series)  
+Similarity: Moderate match (0.590)  
+A detective investigates the brutal murder of a boy in a small town, uncovering a blend of crime and supernatural elements that challenge his understanding of reality.  
+Relation with your query: While not strictly a gangster movie, it involves crime and moral complexities that may appeal to fans of the genre.
+
+3. Se7en (movie)  
+Similarity: Weak match (0.603)  
+Two detectives hunt a serial killer who uses the seven deadly sins as his modus operandi, leading them into a dark exploration of human depravity and justice.  
+Relation with your query: Although it's more of a psychological thriller, it shares themes of crime and moral ambiguity relevant to gangster narratives.
+
+ Multi turn mode
+
+Are you interested in a gritty, realistic portrayal of crime and betrayal, or a stylized, action-packed adventure with larger-than-life characters?
+[Simulated user answer]: Gritty portrayal of crime, please
+
+Are you drawn to a story that delves into the psychological struggles of the characters involved, or one that focuses more on the violent and chaotic aspects of the criminal underworld?
+[Simulated user answer]: Psychological struggles and family loyalty
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Once Upon a Time in America (movie)  
+Similarity: Good match (0.284)  
+This film explores the life of a former gangster haunted by his past decisions in 1920s Manhattan, reflecting on themes of ambition and betrayal.  
+Relation with your query: It closely aligns with the psychological toll of crime and the fragility of trust in relationships.
+
+2. Peaky Blinders (TV series)  
+Similarity: Good match (0.335)  
+Set in post-World War I Birmingham, this series follows the Peaky Blinders gang and their leader, Tommy Shelby, as they navigate loyalty and ambition amidst societal upheaval.  
+Relation with your query: It shares themes of family loyalty and the moral complexities of crime, similar to your focus on loyalty and betrayal.
+
+3. Breaking Bad (TV series)  
+Similarity: Good match (0.370)  
+This series chronicles a chemistry teacher's transformation into a drug kingpin after a terminal diagnosis, exploring the moral decay and desperation that ensue.  
+Relation with your query: It reflects the psychological struggles and ethical dilemmas faced by individuals in a life of crime, resonating with your themes of loyalty and past choices.
+
+[Calculating Metrics]
+- Judge scores: Single 2.67/5 | Multi 4.17/5 | RRI: 1.50
+- Intent similarity     : Single 0.562 | Multi 0.532
+
+============================================================
+SCENARIO 3: Recommend me a classic sci-fi.
+HIDDEN INTENT: I am looking for the book 'Dune'. Setting: an arid desert planet with sandworms. Atmosphere: epic, political, and mysterious. Theme: struggle for resources (spice) and power.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Buy Jupiter and Other Stories (Book)  
+Similarity: Moderate match (0.584)  
+This collection of tales explores the boundaries of reality, blending human experience with cosmic wonder and philosophical dilemmas.  
+Relation with your query: It offers a thoughtful exploration of themes common in classic sci-fi.
+
+2. The Time Machine (movie)  
+Similarity: Weak match (0.632)  
+An Englishman invents a time machine and travels to a future divided by two human factions, exploring civilization's evolution and moral conflicts.  
+Relation with your query: This classic sci-fi film delves into time travel and societal issues, aligning with your interest.
+
+3. Marvel Masterworks: The Human Torch, Vol. 1 (Book)  
+Similarity: Weak match (0.640)  
+The Human Torch navigates a vibrant city filled with heroes and villains, blending adventure with humor while exploring identity and acceptance.  
+Relation with your query: Although more of a superhero comic, it contains elements of fantasy and adventure that may appeal to sci-fi fans.
+
+ Multi turn mode
+
+Are you interested in a thought-provoking exploration of existential themes, or a thrilling adventure filled with futuristic technology and action?
+[Simulated user answer]: Epic political struggle for resources
+
+Are you looking for a story that delves into the moral complexities of power and survival, or one that focuses on the grand scale of interstellar conflict and diplomacy?
+[Simulated user answer]: Grand scale of interstellar conflict
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Call of the Herald (The Dawning of Power, #1) (Book)  
+Similarity: Good match (0.342)  
+In a world where ancient powers awaken, young heroes confront their destinies amid brewing conflict and moral complexities. The struggle for survival and the exploration of loyalty and courage resonate throughout the narrative.  
+Relation with your query: This story shares themes of power dynamics and survival in a chaotic universe.
+
+2. Star Wars (movie)  
+Similarity: Good match (0.354)  
+In a galaxy under Imperial rule, a princess's fate intertwines with two unlikely heroes as they embark on a quest for freedom, facing tyranny and forging alliances. The narrative emphasizes loyalty and the battle between light and darkness.  
+Relation with your query: It mirrors the themes of political tension and the fight for resources in a universe on the brink of chaos.
+
+3. The 100 (TV series)  
+Similarity: Good match (0.355)  
+Set in a post-apocalyptic future, a group of juvenile delinquents is sent to Earth to determine its habitability, facing moral dilemmas and the harsh realities of survival. Their journey explores identity and the struggle for dominance.  
+Relation with your query: This series reflects the challenges of survival and the complexities of leadership in a resource-scarce environment.
+
+[Calculating Metrics]
+- Judge scores: Single 1.50/5 | Multi 2.33/5 | RRI: 0.83
+- Intent similarity     : Single 0.361 | Multi 0.491
+
+============================================================
+SCENARIO 4: I want a romcom.
+HIDDEN INTENT: I am looking for the movie 'Notting Hill'. Atmosphere: lighthearted, romantic, funny, and feel-good. Setting: a bookstore in the Notting Hill district, London. Plot: an ordinary man and a famous actress.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Ted 2 (movie)  
+Similarity: Moderate match (0.437)  
+In this sequel, a teddy bear named Ted faces challenges in his quest for parenthood, exploring themes of love and acceptance.  
+Relation with your query: This film combines humor and heartfelt moments, fitting the romcom genre.
+
+2. Marvel Masterworks: The Human Torch, Vol. 1 (book)  
+Similarity: Moderate match (0.444)  
+The Human Torch navigates adventures filled with humor and eccentric characters while balancing his superhero duties and personal identity.  
+Relation with your query: Although primarily a superhero story, it features comedic elements that may appeal to romcom fans.
+
+3. The Big Bang Theory (TV series)  
+Similarity: Moderate match (0.445)  
+This series follows two physicists and their quirky friends as they navigate friendship and romance, often with humorous outcomes.  
+Relation with your query: The show's focus on relationships and comedic interactions aligns well with romcom themes.
+
+ Multi turn mode
+
+Are you looking for a light-hearted, whimsical story filled with comedic misunderstandings, or a more grounded romance that explores the complexities of relationships and personal growth?
+[Simulated user answer]: Lighthearted and romantic comedy
+
+Are you interested in a story set in a vibrant, bustling city filled with quirky characters, or a more intimate setting that focuses on the charm of small-town life?
+[Simulated user answer]: Vibrant city with quirky characters
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Manhattan (movie)  
+Similarity: Good match (0.332)  
+In the vibrant yet tumultuous backdrop of New York City, a divorced writer navigates love and relationships, facing emotional conflicts and moral dilemmas.  
+Relation with your query: This film captures the complexities of love and connection in a bustling city, similar to your story's themes.
+
+2. Friends (TV series)  
+Similarity: Good match (0.357)  
+A close-knit group of friends in New York City confronts life’s challenges, finding solace in their shared experiences and humor amidst the chaos.  
+Relation with your query: The series explores friendship and romantic entanglements in an urban setting, resonating with the comedic mishaps in your narrative.
+
+3. How I Met Your Mother (TV series)  
+Similarity: Good match (0.372)  
+A father recounts his youthful escapades with friends in New York City, highlighting the quest for love and the humor in life's unpredictability.  
+Relation with your query: This show reflects the journey of connection and the comedic elements of city life, paralleling the essence of your story.
+
+[Calculating Metrics]
+- Judge scores: Single 1.83/5 | Multi 2.00/5 | RRI: 0.17
+- Intent similarity     : Single 0.436 | Multi 0.444
+
+============================================================
+SCENARIO 5: I want something futuristic.
+HIDDEN INTENT: I am looking for the book '1984'. Atmosphere: oppressive, grim, hopeless, and paranoid. Setting: a totalitarian state with cameras. Theme: Big Brother, surveillance, and control.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Black Mirror (TV series)  
+Similarity: Moderate match (0.519)  
+This series explores the dark side of technology and its impact on human relationships, presenting cautionary tales about a future dominated by screens and digital connections.  
+Relation with your query: It offers a thought-provoking look at futuristic themes and the consequences of technological advancements.
+
+2. Buy Jupiter and Other Stories (Book)  
+Similarity: Moderate match (0.528)  
+A collection of stories that blend the ordinary with the extraordinary, exploring human experiences and ethical dilemmas in a rapidly evolving universe.  
+Relation with your query: The book delves into futuristic concepts and the interplay between humanity and the unknown.
+
+3. The Matrix (movie)  
+Similarity: Moderate match (0.551)  
+Set in a dystopian future, this film follows a hacker who discovers the truth about a simulated reality controlled by machines, prompting a rebellion against their dominance.  
+Relation with your query: It encapsulates futuristic ideas about artificial intelligence and the nature of reality, making it a compelling match.
+
+ Multi turn mode
+
+Are you looking for a thrilling adventure filled with high-tech gadgets and fast-paced action, or a thought-provoking narrative that explores the ethical dilemmas of advanced technology and its impact on society?
+[Simulated user answer]: Thought-provoking narrative on control
+
+Are you interested in a narrative that delves into the psychological effects of surveillance and personal autonomy, or one that examines the societal consequences of technological advancements through a more philosophical lens?
+[Simulated user answer]: Psychological effects of surveillance, please
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. The Matrix (movie)  
+   Similarity: Good match (0.360)  
+   In a dystopian future, humanity is trapped by artificial intelligence, blurring the lines between reality and illusion. A hacker discovers a hidden truth that challenges his understanding of existence.  
+   Relation with your query: This film explores themes of surveillance, control, and the struggle for freedom, aligning closely with your query.
+
+2. Black Mirror (TV series)  
+   Similarity: Good match (0.391)  
+   Each episode presents a society dominated by technology, where the boundaries of reality blur and characters face moral dilemmas tied to their digital lives.  
+   Relation with your query: The series reflects on the psychological impacts of technology and privacy, resonating with your exploration of living under constant surveillance.
+
+3. Mr. Robot (TV series)  
+   Similarity: Good match (0.395)  
+   A young programmer battles isolation and corporate control while using hacking as a means to connect and protect those he cares about.  
+   Relation with your query: This show delves into themes of autonomy, paranoia, and the quest for identity in a controlled society, paralleling your interests in the psychological toll of surveillance.
+
+[Calculating Metrics]
+- Judge scores: Single 2.50/5 | Multi 4.00/5 | RRI: 1.50
+- Intent similarity     : Single 0.335 | Multi 0.409
+
+============================================================
+SCENARIO 6: I want fantasy.
+HIDDEN INTENT: I am looking for the movie 'The Lord of the Rings'. Atmosphere: epic, adventurous, and magical. Setting: the fantasy world Middle-earth. Plot: a long journey to destroy a dangerous ring.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Inception (movie)  
+Similarity: Moderate match (0.417)  
+In a world where reality blurs, a skilled thief navigates the subconscious to implant an idea into a target's mind. The film explores themes of loss, redemption, and the complexities of the human psyche.  
+Relation with your query: This movie features a fantastical exploration of dreams and reality, aligning well with your interest in fantasy.
+
+2. The Postman Always Rings Twice (Book)  
+Similarity: Moderate match (0.428)  
+A young woman trapped in a stifling marriage finds forbidden attraction with a drifter, leading to a dangerous alliance and moral ambiguity. The story delves into themes of desire, betrayal, and the quest for freedom.  
+Relation with your query: While primarily a psychological drama, it includes elements of passion and intrigue that may appeal to those interested in fantasy narratives.
+
+3. Buy Jupiter and Other Stories (Book)  
+Similarity: Moderate match (0.452)  
+This collection of stories spans the mundane to the extraordinary, exploring human experience and the mysteries of existence through whimsical and profound narratives.  
+Relation with your query: The stories invite readers into imaginative realms, making it a good fit for those seeking fantasy elements.
+
+ Multi turn mode
+
+Are you looking for an epic adventure filled with magical creatures and quests, or a darker, more introspective tale that explores the moral complexities of power and magic?
+[Simulated user answer]: Epic adventure with magical quests
+
+Are you interested in a lighthearted, whimsical journey filled with humor and charm, or a more serious and grand narrative that delves into ancient prophecies and legendary heroes?
+[Simulated user answer]: Serious and grand narrative, please
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Call of the Herald (The Dawning of Power, #1) (Book)  
+Similarity: Good match (0.285)  
+This story follows young heroes awakening their latent powers amidst ancient evils and a brewing storm. They confront their destinies while navigating a world filled with moral complexities and the struggle between light and darkness.  
+Relation with your query: The themes of destiny, self-discovery, and the battle against dark forces closely align with your quest narrative.
+
+2. Star Wars (movie)  
+Similarity: Good match (0.357)  
+In a galaxy under Imperial rule, unlikely heroes embark on a quest to rescue a princess, facing formidable foes and exploring themes of rebellion and sacrifice. Their journey highlights the clash between tyranny and freedom.  
+Relation with your query: The epic adventure, perilous quests, and the struggle between light and darkness resonate with your description of a heroic journey.
+
+3. Game of Thrones (TV series)  
+Similarity: Good match (0.370)  
+Set in Westeros, noble families engage in a deadly power struggle while an ancient evil awakens in the North, threatening the realm. Themes of betrayal, loyalty, and moral complexity dominate the narrative.  
+Relation with your query: The intricate power dynamics and the looming threat of darkness parallel the epic nature of your quest and the burden of destiny.
+
+[Calculating Metrics]
+- Judge scores: Single 1.00/5 | Multi 2.50/5 | RRI: 1.50
+- Intent similarity     : Single 0.454 | Multi 0.462
+
+============================================================
+SCENARIO 7: I look for a mystery book.
+HIDDEN INTENT: I am looking for books about 'Sherlock Holmes'. Atmosphere: intellectual, mysterious, and Victorian. Setting: the foggy London of the 19th century. Theme: deduction and murder investigation.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. The Outsider (TV series)  
+Similarity: Moderate match (0.512)  
+In a small town, the brutal murder of a boy leads detective Ralph Anderson and investigator Holly Gibney into a case that blurs the lines between the natural and supernatural.  
+Relation with your query: This series involves a gripping mystery with dark themes, making it a strong fit for mystery enthusiasts.
+
+2. Seven Masterpieces of Gothic Horror (Book)  
+Similarity: Moderate match (0.553)  
+This anthology explores eerie Gothic tales where reality and the supernatural intertwine, featuring haunted settings and psychological tension.  
+Relation with your query: The book offers a collection of mysterious and suspenseful stories, appealing to those who enjoy atmospheric mystery.
+
+3. Second Fontana Book of Great Horror Stories (Book)  
+Similarity: Moderate match (0.554)  
+A diverse collection of unsettling tales that delve into the human psyche, revealing fears and supernatural elements that challenge characters' realities.  
+Relation with your query: This compilation features chilling narratives that evoke mystery and suspense, aligning well with your interest in mystery books.
+
+ Multi turn mode
+
+Are you interested in a classic whodunit with clever twists, or a psychological thriller that delves into the minds of its characters?
+[Simulated user answer]: Classic whodunit with clever twists
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. The Outsider (TV series)  
+Similarity: Moderate match (0.415)  
+In a small town, a brutal murder disrupts the community's peace, leading detective Ralph Anderson and investigator Holly Gibney into a case that blurs the lines between natural and supernatural.  
+Relation with your query: This series shares themes of murder investigation and community secrets, similar to your detective's journey.
+
+2. Se7en (movie)  
+Similarity: Moderate match (0.420)  
+Two detectives in a grim city pursue a serial killer whose crimes are based on the seven deadly sins, confronting their own vulnerabilities along the way.  
+Relation with your query: The intense investigation and moral dilemmas resonate with the detective's struggle in your query.
+
+3. Sherlock (TV series)  
+Similarity: Moderate match (0.438)  
+In modern London, detective Sherlock Holmes and Dr. John Watson tackle a series of complex cases, exploring themes of justice and human nature amidst urban intrigue.  
+Relation with your query: This series features a detective navigating crime and moral ambiguity, reflecting your query's focus on unraveling a murder mystery.
+
+[Calculating Metrics]
+- Judge scores: Single 2.00/5 | Multi 2.33/5 | RRI: 0.33
+- Intent similarity     : Single 0.427 | Multi 0.523
+
+============================================================
+SCENARIO 8: I want horror.
+HIDDEN INTENT: I am looking for the movie 'A Quiet Place'. Atmosphere: dead silent, nerve-wracking, and terrifying. Plot: you must not make a sound or the monsters will hear you. Setting: a remote farmhouse.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Seven Masterpieces of Gothic Horror (Book)  
+Similarity: Good match (0.329)  
+This collection delves into the eerie realms of Gothic horror, where supernatural elements intertwine with the fragile human psyche. It explores themes of isolation and inner demons amidst chilling tales.  
+Relation with your query: This book offers a deep dive into classic horror literature that aligns well with your interest in horror.
+
+2. Second Fontana Book of Great Horror Stories (Book)  
+Similarity: Good match (0.343)  
+A diverse array of unsettling tales invites readers to confront their fears and the malevolent forces lurking within. The narratives explore the darkness of the human mind, creating a suspenseful atmosphere.  
+Relation with your query: This collection presents a variety of horror stories that resonate with your desire for chilling narratives.
+
+3. Night of the Living Dead (movie)  
+Similarity: Good match (0.377)  
+In a remote farmhouse, a group faces a terrifying zombie invasion, revealing their fears and moral dilemmas as they struggle for survival. The film captures the tension between external threats and internal conflicts.  
+Relation with your query: This iconic horror film embodies the themes of survival and fear that you seek in horror content.
+
+ Multi turn mode
+
+Are you interested in a psychological horror that delves into the human mind, or a supernatural horror filled with eerie creatures and dark forces?
+[Simulated user answer]: Supernatural horror with eerie creatures
+
+Are you looking for a horror story that emphasizes suspense and atmosphere, or one that is more focused on shocking scares and intense action?
+[Simulated user answer]: Suspenseful and atmospheric horror
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Night of the Living Dead (movie)  
+Similarity: Good match (0.287)  
+In a remote farmhouse, a group faces a nightmarish struggle against zombies, revealing the fragility of life and human nature under pressure.  
+Relation with your query: Both involve characters confronting fears and dark forces in an isolated setting.
+
+2. Seven Masterpieces of Gothic Horror (Book)  
+Similarity: Good match (0.313)  
+This anthology explores Gothic horror themes, where reality blurs with the supernatural, and characters confront their inner demons amidst eerie settings.  
+Relation with your query: Both highlight isolation and the struggle against oppressive, dark forces.
+
+3. Se7en (movie)  
+Similarity: Good match (0.347)  
+Two detectives pursue a serial killer whose crimes reflect the seven deadly sins, leading them to confront moral decay and their own vulnerabilities.  
+Relation with your query: Both narratives involve a deep exploration of fear and the darker aspects of humanity in a suspenseful atmosphere.
+
+[Calculating Metrics]
+- Judge scores: Single 3.33/5 | Multi 3.33/5 | RRI: 0.00
+- Intent similarity     : Single 0.467 | Multi 0.428
+
+============================================================
+SCENARIO 9: I want a book about some famous person.
+HIDDEN INTENT: I am looking for the book 'Steve Jobs'. Atmosphere: inspiring, complex, and sometimes critical. Theme: innovation, design, and technology. Character: a visionary but difficult leader.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Forrest Gump (movie)  
+Similarity: Moderate match (0.569)  
+This film follows a man with a gentle spirit navigating pivotal historical moments in America, exploring themes of love, destiny, and resilience.  
+Relation with your query: It features a famous character whose life story reflects significant historical events.
+
+2. Once Upon a Time in America (movie)  
+Similarity: Weak match (0.606)  
+Set in 1920s Manhattan, this story revolves around a former gangster confronting his past amid ambition and betrayal.  
+Relation with your query: It portrays a well-known character's life, though it focuses more on crime than fame.
+
+3. Marvel Masterworks: The Human Torch, Vol. 1 (Book)  
+Similarity: Weak match (0.609)  
+This comic collection showcases the adventures of the Human Torch, blending humor and action in a post-war society filled with heroes and villains.  
+Relation with your query: It features a famous superhero, but it is more focused on fantasy than a biographical narrative.
+
+ Multi turn mode
+
+Are you interested in a biography that focuses on the personal struggles and triumphs of the individual, or would you prefer a narrative that highlights their impact on society and culture? Alternatively, would you like a fictionalized account that takes creative liberties with their life story?
+[Simulated user answer]: Impact on society and culture
+
+Are you looking for a historical figure whose achievements changed the course of history, or a contemporary icon who has influenced modern culture? Would you prefer a focus on their professional accomplishments or their personal life and relationships?
+[Simulated user answer]: Professional accomplishments and innovation
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Forrest Gump (movie)  
+   Similarity: Moderate match (0.487)  
+   This film follows a man with a gentle spirit as he navigates significant historical events and personal challenges, highlighting themes of love, destiny, and resilience.  
+   Relation with your query: It captures the essence of personal triumphs and societal change, resonating with the pursuit of excellence.
+
+2. Black Mirror (TV series)  
+   Similarity: Moderate match (0.493)  
+   This anthology series explores the dark side of technology and its impact on human relationships, raising profound questions about identity and connection in a digital age.  
+   Relation with your query: It addresses the transformative effects of innovation, paralleling the challenges faced by innovators.
+
+3. Buy Jupiter and Other Stories (Book)  
+   Similarity: Moderate match (0.509)  
+   A collection of stories that blend the mundane with the extraordinary, exploring human experiences and philosophical dilemmas in a rapidly evolving universe.  
+   Relation with your query: It reflects on the implications of innovation and the human spirit, aligning with the themes of vision and legacy.
+
+[Calculating Metrics]
+- Judge scores: Single 1.00/5 | Multi 2.50/5 | RRI: 1.50
+- Intent similarity     : Single 0.464 | Multi 0.492
+
+============================================================
+SCENARIO 10: I want a spirit movie.
+HIDDEN INTENT: I am looking for the movie 'Spirited Away'. Atmosphere: dreamlike, magical, strange, and wondrous. Setting: a bathhouse for spirits and gods. Plot: a girl must save her parents.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Seven Masterpieces of Gothic Horror (Book)  
+Similarity: Moderate match (Cosine distance: 0.530)  
+This collection delves into the eerie realms of Gothic horror, blending romantic fantasies with chilling tales of the supernatural.  
+Relation with your query: It explores themes of the uncanny and the supernatural, aligning with your interest in spirit-related narratives.
+
+2. Night of the Living Dead (movie)  
+Similarity: Moderate match (Cosine distance: 0.542)  
+In a remote farmhouse, a group faces bloodthirsty zombies, revealing the fragility of life amidst a nightmarish struggle for survival.  
+Relation with your query: While primarily a horror film, it contains elements of the supernatural and existential dread that may appeal to your interest in spirit themes.
+
+3. Second Fontana Book of Great Horror Stories (Book)  
+Similarity: Moderate match (Cosine distance: 0.555)  
+This anthology invites readers into unsettling tales where characters confront malevolent forces and the darkness within.  
+Relation with your query: The collection features supernatural elements and psychological horror, making it relevant to your desire for spirit-themed stories.
+
+ Multi turn mode
+
+Are you looking for a haunting tale that delves into themes of loss and redemption, or a lighter, whimsical story that explores the bond between the living and the spirit world?
+[Simulated user answer]: Whimsical story with spirits, please
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Euphoria (TV series)  
+Similarity: Moderate match (0.405)  
+This series follows a group of high school students navigating the complexities of adolescence amidst addiction and trauma. Their intertwined lives explore themes of love, betrayal, and self-discovery.  
+Relation with your query: While it captures the essence of youth and connection, it focuses more on darker themes than whimsical spirits.
+
+2. Friends (TV series)  
+Similarity: Moderate match (0.431)  
+This beloved sitcom features six young adults in New York City as they navigate life, love, and friendship, finding support in each other amidst various challenges.  
+Relation with your query: It emphasizes friendship and connection, resonating with the themes of companionship in your query.
+
+3. Night at the Museum: Secret of the Tomb (movie)  
+Similarity: Moderate match (0.450)  
+In this adventure, a museum's exhibits come to life, and the protagonist must restore their magic while navigating historical figures and mythical creatures.  
+Relation with your query: It shares a whimsical tone and explores themes of friendship and legacy, aligning with the magical adventure aspect of your query.
+
+[Calculating Metrics]
+- Judge scores: Single 1.00/5 | Multi 2.33/5 | RRI: 1.33
+- Intent similarity     : Single 0.283 | Multi 0.276
+
+============================================================
+SCENARIO 11: I want to watch scifi.
+HIDDEN INTENT: I am looking for the series 'The Mandalorian'. Atmosphere: gritty and tense. Setting: a lawless galaxy after the fall of the Galactic Empire. Plot: a lone bounty hunter navigating the outer reaches.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Black Mirror (TV series)  
+Similarity: Weak match (0.653)  
+This anthology series explores the dark and often dystopian aspects of modern society, focusing on the impact of technology on human relationships and identity.  
+Relation with your query: It offers a thought-provoking take on the intersection of technology and humanity, fitting for sci-fi enthusiasts.
+
+2. The X-Files (TV series)  
+Similarity: Weak match (0.667)  
+This series follows two FBI agents as they investigate unsolved cases involving paranormal phenomena, blending elements of science fiction with mystery and conspiracy.  
+Relation with your query: It features classic sci-fi themes of the unexplained and extraterrestrial, appealing to fans of the genre.
+
+3. Alien (movie)  
+Similarity: Weak match (0.674)  
+Set in deep space, this film follows the crew of the Nostromo as they encounter a deadly alien creature, blending horror with science fiction elements.  
+Relation with your query: It is a seminal sci-fi horror film that captures the essence of survival against an extraterrestrial threat, making it a must-watch for sci-fi fans.
+
+ Multi turn mode
+
+Are you looking for something that explores the vastness of space and advanced technology, or a story that delves into dystopian societies and human struggles? Alternatively, would you prefer a focus on time travel and its consequences?
+[Simulated user answer]: Gritty space bounty hunter adventure
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. The Mandalorian (TV series)  
+Similarity: Good match (0.239)  
+In a galaxy reeling from the collapse of the Galactic Empire, a lone bounty hunter navigates a treacherous landscape filled with danger and moral ambiguities. He faces the darker aspects of humanity while pursuing contracts in a lawless universe.  
+Relation with your query: This series closely mirrors your themes of a gritty future, a relentless bounty hunter, and moral dilemmas.
+
+2. Money Heist (TV series)  
+Similarity: Moderate match (0.409)  
+A mastermind known as The Professor orchestrates a grand heist with a diverse group of robbers, each driven by desperation and ambition. The plot thickens as they confront law enforcement and navigate shifting loyalties.  
+Relation with your query: While it focuses on heists rather than bounty hunting, it shares themes of ambition, moral conflict, and complex character dynamics.
+
+3. Peaky Blinders (TV series)  
+Similarity: Moderate match (0.424)  
+Set in post-World War I Birmingham, this series follows the Peaky Blinders gang as they navigate ambition, betrayal, and the quest for power, led by the determined Tommy Shelby.  
+Relation with your query: It reflects a gritty atmosphere and moral ambiguity, though it centers on gang dynamics rather than bounty hunting.
+
+[Calculating Metrics]
+- Judge scores: Single 1.50/5 | Multi 3.83/5 | RRI: 2.33
+- Intent similarity     : Single 0.269 | Multi 0.430
+
+============================================================
+SCENARIO 12: Recommend a show about the future.
+HIDDEN INTENT: I am looking for the series 'The 100'. Setting: a radioactive Earth abandoned for 100 years. Plot: a group of juvenile delinquents sent from an orbiting ark to see if the planet is habitable.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Black Mirror (TV series)  
+Similarity: Moderate match (0.427)  
+This anthology series explores the dark side of technology and its impact on society, with each episode presenting a unique cautionary tale about the future.  
+Relation with your query: It directly addresses the implications of technological advancements and their effects on humanity.
+
+2. Mr. Robot (TV series)  
+Similarity: Moderate match (0.482)  
+The story follows a young programmer who battles with his anti-social tendencies while engaging in hacking to fight against corporate control and societal manipulation.  
+Relation with your query: It delves into themes of technology's influence on personal identity and societal structures, relevant to future scenarios.
+
+3. Zero Echo Shadow Prime (Book)  
+Similarity: Moderate match (0.581)  
+Set in a near-future world, it follows a woman who becomes a pioneer in AI but faces existential challenges after her consciousness is uploaded into a robotic body.  
+Relation with your query: It explores the intersection of humanity and technology, emphasizing the future of consciousness and identity.
+
+ Multi turn mode
+
+Are you interested in a dystopian vision of the future that explores societal collapse, or a more optimistic take on technological advancements and human potential?
+[Simulated user answer]: Dystopian vision of the future
+
+Are you looking for a story that focuses on survival and rebellion against oppressive systems, or one that delves into the psychological impact of living in a bleak future?
+[Simulated user answer]: Survival and rebellion against oppression
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Call of the Herald (The Dawning of Power, #1) (Book)  
+Similarity: Good match (0.282)  
+In a world filled with ancient powers and brewing conflict, young heroes confront their latent abilities and moral complexities as they face external and internal struggles.  
+Relation with your query: This story shares themes of resilience and the fight against oppressive forces in a challenging world.
+
+2. The 100 (TV series)  
+Similarity: Good match (0.317)  
+Set in a post-apocalyptic future, a group of juvenile delinquents is sent to Earth to determine its habitability, facing moral dilemmas and survival challenges.  
+Relation with your query: The series explores survival and rebellion against tyranny, resonating with your themes of hope and unity.
+
+3. Night of the Living Dead (movie)  
+Similarity: Good match (0.381)  
+A group of individuals trapped in a farmhouse must survive a zombie apocalypse, grappling with fear, mistrust, and moral decisions as they confront external threats.  
+Relation with your query: This film delves into the fragility of humanity in desperate times, paralleling your exploration of survival and the human spirit.
+
+[Calculating Metrics]
+- Judge scores: Single 2.00/5 | Multi 4.17/5 | RRI: 2.17
+- Intent similarity     : Single 0.165 | Multi 0.314
+
+============================================================
+SCENARIO 13: Give me tense fantasy.
+HIDDEN INTENT: I am looking for the series 'Game of Thrones'. Atmosphere: epic and brutal. Setting: the continent of Westeros. Theme: noble families fighting for the Iron Throne while an ancient evil awakens.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Call of the Herald (The Dawning of Power, #1) (Book)  
+Similarity: Moderate match (0.450)  
+In a world filled with ancient powers and emerging heroes, a struggle for survival unfolds as darkness threatens to consume the realms. Characters confront their destinies amidst moral complexities and the weight of choices.  
+Relation with your query: This book captures tense fantasy themes with a focus on conflict and self-discovery.
+
+2. Dangerous Alliance (Book)  
+Similarity: Moderate match (0.464)  
+A young woman navigates a tumultuous emotional landscape as love and fear intertwine, leading her to question her feelings for a captivating yet terrifying man. The story explores the dangers of desire and emotional vulnerability.  
+Relation with your query: This narrative presents a tense atmosphere, blending emotional stakes with fantasy elements.
+
+3. Night at the Museum: Secret of the Tomb (movie)  
+Similarity: Moderate match (0.475)  
+Larry Daley embarks on a globe-spanning adventure to restore fading magic in a museum where history comes alive at night, confronting themes of friendship and legacy.  
+Relation with your query: While more whimsical, it still contains elements of fantasy and tension through its adventure and magical stakes.
+
+ Multi turn mode
+
+Are you looking for a dark and gritty fantasy filled with political intrigue, or an epic adventure where heroes face overwhelming odds in a magical realm?
+[Simulated user answer]: Dark and gritty fantasy, please
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Call of the Herald (The Dawning of Power, #1) (Book)  
+Similarity: Good match (0.283)  
+In a world where ancient powers awaken, young heroes confront their latent potential amidst brewing chaos and moral complexities.  
+Relation with your query: This item shares themes of dark forces, moral dilemmas, and the struggle for survival in a collapsing realm.
+
+2. Game of Thrones (TV series)  
+Similarity: Good match (0.324)  
+In Westeros, noble families engage in a deadly power struggle filled with betrayal and ancient evils, as they confront both external threats and moral challenges.  
+Relation with your query: This series reflects the themes of betrayal, power struggles, and the blurred lines of morality in a kingdom on the brink of collapse.
+
+3. Seven Masterpieces of Gothic Horror (Book)  
+Similarity: Good match (0.357)  
+This collection explores the eerie realms of Gothic horror, where reality blurs with the supernatural, and characters confront their deepest fears and moral conflicts.  
+Relation with your query: The anthology resonates with the themes of confronting inner demons and the dark allure of secrets, paralleling the journey of a weary hero in a treacherous landscape.
+
+[Calculating Metrics]
+- Judge scores: Single 1.83/5 | Multi 4.17/5 | RRI: 2.33
+- Intent similarity     : Single 0.359 | Multi 0.502
+
+============================================================
+SCENARIO 14: Looking for a mystery.
+HIDDEN INTENT: I am looking for the series 'The X-Files'. Characters: FBI agents Fox Mulder and Dana Scully. Theme: unsolved cases involving aliens, conspiracies, and supernatural phenomena.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. The Outsider (TV series)  
+Similarity: Moderate match (0.451)  
+In a small town, a brutal murder leads to an investigation that uncovers a sinister force. Detective Ralph Anderson and investigator Holly Gibney face a case that challenges their understanding of reality.  
+Relation with your query: This series involves a gripping mystery with supernatural elements.
+
+2. Buy Jupiter and Other Stories (Book)  
+Similarity: Moderate match (0.470)  
+This collection of stories explores the human experience, blending the mundane with cosmic wonders and ethical dilemmas. Each tale invites readers to ponder the mysteries of existence and the implications of their choices.  
+Relation with your query: While not strictly a mystery, it delves into themes of the unknown and existential questions.
+
+3. Alien (movie)  
+Similarity: Moderate match (0.513)  
+The crew of the spaceship Nostromo encounters a terrifying alien presence after responding to a distress signal. As paranoia and dread set in, they must confront both the external threat and their own fears.  
+Relation with your query: This film features a suspenseful and mysterious atmosphere, centered around survival against an unknown entity.
+
+ Multi turn mode
+
+Are you interested in a gripping, fast-paced thriller with unexpected twists, or a slow-burn mystery that delves into character psychology and atmosphere?
+[Simulated user answer]: Slowburn mystery with supernatural elements
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. The Outsider (TV series)  
+Similarity: Good match (0.316)  
+In a small town, a brutal murder disrupts the community's peace, leading detectives to confront a case that intertwines the natural and supernatural. The investigation reveals dark secrets that challenge their understanding of reality.  
+Relation with your query: This series closely mirrors the themes of a detective facing supernatural elements and personal demons.
+
+2. Seven Masterpieces of Gothic Horror (Book)  
+Similarity: Good match (0.350)  
+This collection delves into Gothic horror, exploring eerie tales where reality and the supernatural intertwine, set against a backdrop of isolation and psychological conflict.  
+Relation with your query: The themes of haunting memories and the supernatural resonate well with your interest in a detective's chilling experiences.
+
+3. Se7en (movie)  
+Similarity: Good match (0.367)  
+In a dark city, two detectives pursue a serial killer whose crimes reflect the seven deadly sins, forcing them to confront moral dilemmas and their own vulnerabilities.  
+Relation with your query: While more focused on crime than the supernatural, it shares the atmosphere of tension and the struggle with dark truths.
+
+[Calculating Metrics]
+- Judge scores: Single 2.50/5 | Multi 2.50/5 | RRI: 0.00
+- Intent similarity     : Single 0.291 | Multi 0.281
+
+============================================================
+SCENARIO 15: Give me a thrilling series.
+HIDDEN INTENT: I am looking for the series 'Money Heist' (La Casa de Papel). Plot: a mastermind called 'The Professor' recruits eight robbers to carry out a massive heist at the Royal Mint of Spain.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. The Shining (movie)  
+Similarity: Moderate match (0.600)  
+This film follows Jack Torrance, who takes his family to the eerie Overlook Hotel, where isolation and a dark history lead to madness and terror.  
+Relation with your query: A strong choice for a thrilling experience with psychological horror.
+
+2. Scream Queens (TV series)  
+Similarity: Weak match (0.605)  
+Set on a university campus, this series blends humor and horror as sorority sisters face a series of gruesome murders, revealing secrets and rivalries.  
+Relation with your query: Offers a mix of thrills and dark comedy, making it a lighter yet engaging option.
+
+3. The Star Wars (The Star Wars, #0) (Book)  
+Similarity: Weak match (0.625)  
+This companion book explores the creative journey behind the Star Wars saga, filled with whimsical illustrations and storytelling insights.  
+Relation with your query: While not a traditional thriller, it provides an adventurous experience in a beloved universe.
+
+ Multi turn mode
+
+Are you looking for a psychological thriller that delves into the complexities of the human mind, or an action-packed adventure filled with high-stakes chases and unexpected twists?
+[Simulated user answer]: Action-packed adventure with twists
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Now You See Me 2 (movie)  
+Similarity: Good match (0.385)  
+In this sequel, the Four Horsemen face a shadowy adversary in a high-stakes heist that tests their loyalty and cunning. The plot intertwines deception, suspense, and themes of trust and betrayal.  
+Relation with your query: This item closely mirrors your themes of conspiracy and high-stakes tension.
+
+2. The Long Walk (Book)  
+Similarity: Moderate match (0.413)  
+In a dystopian future, boys compete in a brutal endurance test that reveals their desperation and determination. The narrative explores survival and the harsh realities of authoritarianism.  
+Relation with your query: While it shares themes of high stakes and psychological tension, it diverges into a more dystopian context.
+
+3. Call of the Herald (The Dawning of Power, #1) (Book)  
+Similarity: Moderate match (0.419)  
+This fantasy tale follows young heroes awakening ancient powers amidst rising evils, exploring themes of destiny, moral complexity, and the struggle for survival.  
+Relation with your query: It reflects the journey of heroes facing formidable challenges, though it leans more towards fantasy elements rather than a contemporary conspiracy.
+
+[Calculating Metrics]
+- Judge scores: Single 1.00/5 | Multi 2.50/5 | RRI: 1.50
+- Intent similarity     : Single 0.095 | Multi 0.098
+
+============================================================
+SCENARIO 16: I want a tense show.
+HIDDEN INTENT: I am looking for the series 'Better Call Saul'. Atmosphere: tragicomic and tense. Plot: the transformation of small-time lawyer Jimmy McGill into the morally ambiguous 'criminal' lawyer Saul Goodman.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. The Long Walk (Book)  
+Similarity: Moderate match (0.500)  
+In a bleak future, one hundred boys compete in a harrowing endurance test, revealing desperation and fierce determination.  
+Relation with your query: This story encapsulates tension and survival under extreme circumstances.
+
+2. Reservoir Dogs (Movie)  
+Similarity: Moderate match (0.507)  
+After a heist goes wrong, a group of criminals confronts betrayal and distrust in a dimly lit warehouse, leading to escalating tensions.  
+Relation with your query: The film's atmosphere is thick with tension and moral ambiguity, making it a tense viewing experience.
+
+3. Money Heist (TV Series)  
+Similarity: Moderate match (0.514)  
+A mastermind orchestrates a complex heist, leading to high-stakes encounters with law enforcement and moral dilemmas among the robbers.  
+Relation with your query: The series is filled with tension and uncertainty as characters navigate their ambitious plans and personal conflicts.
+
+ Multi turn mode
+
+Are you looking for a psychological thriller that delves into the minds of its characters, or a high-stakes action series filled with suspense and unexpected twists?
+[Simulated user answer]: I prefer a character-driven drama
+
+Are you interested in a tense drama that explores deep emotional conflicts and moral dilemmas, or one that focuses on interpersonal relationships and the tension that arises from them?
+[Simulated user answer]: Tense drama with moral dilemmas
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Dangerous Alliance (Book)  
+Similarity: Good match (0.327)  
+In a world where love and fear intertwine, a young woman struggles with her conflicting emotions for a captivating yet terrifying man. The narrative explores the complexities of affection and the dangers of emotional entanglement.  
+Relation with your query: This story also delves into the themes of loyalty and the blurred lines of relationships, mirroring your exploration of moral dilemmas.
+
+2. The Postman Always Rings Twice (Book)  
+Similarity: Good match (0.342)  
+A young woman trapped in a stifling marriage finds herself drawn to a drifter, leading to a dangerous plot filled with deceit and moral ambiguity. The narrative explores the consequences of their choices and the nature of betrayal.  
+Relation with your query: The themes of guilt, betrayal, and the consequences of life-altering decisions resonate strongly with your inquiry.
+
+3. Euphoria (TV series)  
+Similarity: Good match (0.350)  
+Set in a tumultuous suburban landscape, a group of high school students navigates the complexities of adolescence, addiction, and social pressures, leading to emotional turmoil and self-discovery.  
+Relation with your query: The series captures the intense emotional landscapes and the struggles of interconnected lives, similar to the dynamics you described.
+
+[Calculating Metrics]
+- Judge scores: Single 3.33/5 | Multi 2.50/5 | RRI: -0.83
+- Intent similarity     : Single 0.280 | Multi 0.256
+
+============================================================
+SCENARIO 17: I'm looking for a medical drama.
+HIDDEN INTENT: I am looking for the series 'The Good Doctor'. Character: Shaun Murphy, a young surgeon with autism and savant syndrome. Setting: a prestigious hospital where he uses his unique gifts to save lives.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Grey's Anatomy (TV series)  
+Similarity: Moderate match (0.512)  
+This series follows the lives of doctors at Grey Sloan Memorial Hospital, intertwining their professional challenges with personal relationships and moral dilemmas.  
+Relation with your query: It is a quintessential medical drama focusing on the emotional and ethical complexities of the medical profession.
+
+2. The Outsider (TV series)  
+Similarity: Moderate match (0.557)  
+In a small town, a detective investigates a brutal murder, uncovering a blend of supernatural elements and deep-seated fears.  
+Relation with your query: While it has a crime focus, it explores themes of human struggle, which may appeal to those interested in dramatic narratives.
+
+3. The Good Doctor (TV series)  
+Similarity: Moderate match (0.578)  
+The story revolves around Shaun Murphy, a young surgeon with autism, as he navigates the challenges of a prestigious hospital while proving his abilities.  
+Relation with your query: It is another medical drama that highlights personal and professional challenges within the healthcare environment.
+
+ Multi turn mode
+
+Are you interested in a gripping, fast-paced narrative that focuses on high-stakes surgeries and intense medical emergencies, or a more character-driven story that delves into the personal lives and ethical dilemmas faced by healthcare professionals?
+[Simulated user answer]: Character-driven story with ethical dilemmas
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Grey's Anatomy (TV series)  
+Similarity: Good match (0.341)  
+This series centers on the lives of doctors at Grey Sloan Memorial Hospital as they face intense medical and personal challenges, exploring themes of love, loss, and ethical dilemmas.  
+Relation with your query: It closely aligns with your themes of ethical dilemmas and the emotional toll of healthcare.
+
+2. The Good Doctor (TV series)  
+Similarity: Moderate match (0.458)  
+The story follows Shaun Murphy, a young surgeon with autism, as he navigates a prestigious surgical unit while confronting social challenges and ethical issues in medicine.  
+Relation with your query: It shares similar themes of personal sacrifice and the complexities of patient care.
+
+3. The Theory of Everything (movie)  
+Similarity: Moderate match (0.533)  
+This film portrays the love story of a brilliant physicist and his partner, highlighting the impact of illness on their relationship and the balance between personal struggles and professional aspirations.  
+Relation with your query: While it focuses more on personal relationships and resilience, it touches on themes of sacrifice and emotional challenges.
+
+[Calculating Metrics]
+- Judge scores: Single 4.17/5 | Multi 4.00/5 | RRI: -0.17
+- Intent similarity     : Single 0.459 | Multi 0.506
+
+============================================================
+SCENARIO 18: Suggest something funny.
+HIDDEN INTENT: I am looking for the series 'Friends'. Atmosphere: lighthearted and feel-good. Setting: New York City. Plot: the personal and professional lives of six friends living in Manhattan.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Marvel Masterworks: The Human Torch, Vol. 1 (Book)  
+Similarity: Good match (Cosine distance: 0.346)  
+This collection features the Human Torch navigating comedic escapades in a vibrant city filled with heroes and villains. The humor highlights the absurdities of heroism while maintaining high stakes.  
+Relation with your query: This book offers a blend of adventure and humor, making it a fun suggestion.
+
+2. Minions (movie)  
+Similarity: Good match (Cosine distance: 0.363)  
+The story follows three Minions seeking purpose as they align with a supervillain, leading to whimsical misadventures filled with humor and heart. Their innocent nature clashes with chaotic villainy, creating delightful comedic moments.  
+Relation with your query: This movie is a lighthearted and funny option, perfect for a good laugh.
+
+3. The Star Wars (The Star Wars, #0) (Book)  
+Similarity: Moderate match (Cosine distance: 0.407)  
+This companion volume explores the imaginative depths of the Star Wars universe, blending adventure and humor while showcasing whimsical designs and concepts. It reflects on creativity and storytelling within a beloved franchise.  
+Relation with your query: While it has humorous elements, it may not be as directly funny as the other suggestions.
+
+ Multi turn mode
+
+Are you looking for something light-hearted and whimsical, or a darker, more satirical take on humor? Would you prefer a story centered around quirky characters and absurd situations, or one that critiques societal norms with its comedy?
+[Simulated user answer]: Lighthearted and feel-good characters
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. How I Met Your Mother (TV series)  
+Similarity: Good match (0.355)  
+This series follows a father as he recounts his youthful escapades with friends in New York City, exploring themes of love, friendship, and the humorous complexities of life.  
+Relation with your query: It shares a focus on friendship and the ups and downs of life, with a lighthearted tone.
+
+2. Marvel Masterworks: The Human Torch, Vol. 1 (Book)  
+Similarity: Good match (0.373)  
+The Human Torch navigates a vibrant city filled with heroes and villains, balancing his superhero duties with comedic adventures and personal growth.  
+Relation with your query: It combines humor and adventure, reflecting the joy of friendship and individuality in a fantastical setting.
+
+3. Friends (TV series)  
+Similarity: Good match (0.390)  
+This show depicts a group of six friends in New York City as they face adulthood's challenges while supporting each other through humor and heartfelt moments.  
+Relation with your query: It emphasizes the beauty of friendship and the joy found in everyday interactions, aligning well with your request for a feel-good story.
+
+[Calculating Metrics]
+- Judge scores: Single 2.00/5 | Multi 3.83/5 | RRI: 1.83
+- Intent similarity     : Single 0.353 | Multi 0.532
+
+============================================================
+SCENARIO 19: I want a dramatic story.
+HIDDEN INTENT: I am looking for the series 'Teresa'. Character: a beautiful but resentful young woman from a poor neighborhood. Theme: obsession with money and social status at any cost.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. The Postman Always Rings Twice (Book)  
+Similarity: Moderate match (0.420)  
+This story revolves around a young woman trapped in a stifling marriage who finds a dangerous connection with a drifter, leading to a plot filled with deceit and moral ambiguity.  
+Relation with your query: The dramatic themes of passion, betrayal, and existential dread align well with your interest in a dramatic story.
+
+2. Dangerous Alliance (Book)  
+Similarity: Moderate match (0.445)  
+A young woman grapples with her conflicting emotions for a man who captivates yet terrifies her, leading to a tumultuous relationship fraught with fear and desire.  
+Relation with your query: The intense emotional struggles and themes of love as both sanctuary and prison resonate with the dramatic elements you seek.
+
+3. Fight Club (movie)  
+Similarity: Moderate match (0.452)  
+In this film, a disillusioned insomniac forms an underground fight club as a response to the emptiness of modern life, exploring themes of identity and self-destruction.  
+Relation with your query: The raw intensity and existential themes present a dramatic exploration of masculinity and rebellion, fitting your request for a dramatic narrative.
+
+ Multi turn mode
+
+Are you looking for a story that explores intense personal relationships and emotional struggles, or one that delves into larger societal issues and conflicts?
+[Simulated user answer]: Intense personal relationships and struggles
+
+Are you interested in a story that focuses on the complexities of love and betrayal, or one that examines the bonds of family and the impact of secrets?
+[Simulated user answer]: Complexities of love and betrayal
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. The Postman Always Rings Twice (Book)  
+Similarity: Good match (0.287)  
+This story follows a young woman trapped in a stifling marriage who finds herself in a dangerous affair with a drifter, leading to a web of deceit and moral ambiguity.  
+Relation with your query: It explores themes of love, betrayal, and the consequences of choices, aligning closely with your interest in emotional turmoil.
+
+2. Dangerous Alliance (Book)  
+Similarity: Good match (0.307)  
+A young woman grapples with conflicting emotions as she navigates her feelings for a captivating yet terrifying man, leading to a dangerous emotional entanglement.  
+Relation with your query: It delves into the complexities of love and fear, resonating with your focus on loyalty, trust, and the price of desire.
+
+3. Manhattan (Movie)  
+Similarity: Good match (0.377)  
+Set in New York City, a divorced writer becomes entangled in a romantic affair with a younger woman and his friend's mistress, exploring the complexities of love and betrayal.  
+Relation with your query: The film captures the emotional conflicts and fragility of relationships, reflecting your interest in the intricate web of love and the consequences of choices.
+
+[Calculating Metrics]
+- Judge scores: Single 2.50/5 | Multi 2.50/5 | RRI: 0.00
+- Intent similarity     : Single 0.310 | Multi 0.336
+
+============================================================
+SCENARIO 20: Recommend a horror.
+HIDDEN INTENT: I am looking for the series 'The Haunting of Hill House'. Atmosphere: terrifying and emotional. Plot: a fractured family confronting haunting memories of their childhood in a paranormal house.
+============================================================
+
+ Single turn mode
+[Bot final answer]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Seven Masterpieces of Gothic Horror (Book)  
+Similarity: Good match (0.375)  
+This collection delves into the eerie realms of Gothic horror, blending romantic fantasies with chilling tales of terror. It explores themes of isolation and the human psyche when confronted with the supernatural.  
+Relation with your query: This book is a strong recommendation for those seeking classic horror literature.
+
+2. Second Fontana Book of Great Horror Stories (Book)  
+Similarity: Moderate match (0.404)  
+This anthology presents a diverse array of unsettling tales that explore the darker aspects of the human psyche, with themes of guilt and obsession woven throughout. The atmosphere is thick with suspense and dread.  
+Relation with your query: This collection offers a moderate selection of horror stories that delve into psychological terror.
+
+3. Night of the Living Dead (movie)  
+Similarity: Moderate match (0.446)  
+Set in a remote farmhouse, this film follows a group of individuals as they face a zombie apocalypse, highlighting their struggles for survival and the moral dilemmas that arise in extreme circumstances.  
+Relation with your query: This classic horror film provides a moderate match, focusing on survival horror and the human condition in crisis.
+
+ Multi turn mode
+
+Are you looking for a psychological horror that delves into the mind's darkest corners, or a supernatural thriller filled with eerie creatures and haunted settings?
+[Simulated user answer]: Psychological horror with emotional depth
+
+[Bot Final Answer (multi-turn)]: Here are some items related to your query, ranked by semantic similarity:
+
+1. Seven Masterpieces of Gothic Horror (Book)  
+Similarity: Good match (0.222)  
+This anthology explores the eerie realms of Gothic horror, where reality blurs with the supernatural, and characters confront their deepest fears amidst chilling tales.  
+Relation with your query: The themes of madness, isolation, and the supernatural strongly resonate with your interest in psychological horror.
+
+2. Second Fontana Book of Great Horror Stories (Book)  
+Similarity: Good match (0.269)  
+This collection delves into unsettling tales that reveal the darkness within the human psyche, exploring fear, obsession, and the thin line between reality and the supernatural.  
+Relation with your query: The exploration of inner fears and haunting truths aligns well with your description of psychological horror.
+
+3. Night of the Living Dead (movie)  
+Similarity: Good match (0.317)  
+In this classic horror film, a group of individuals faces a terrifying struggle for survival against zombies, revealing their inner conflicts and moral dilemmas as the night deepens.  
+Relation with your query: While more focused on external horror, the themes of fear and the fragility of sanity connect with your interest in psychological tension.
+
+[Calculating Metrics]
+- Judge scores: Single 2.43/5 | Multi 3.27/5 | RRI: 0.83
+- Intent similarity     : Single 0.446 | Multi 0.446
+
+Evaluation Complete. Results saved to /home/george/Cross-domain-recommender/chatbot/rag_evaluation_final.xlsx
+
+============================================================
+🎨 GENERATING EVALUATION REPORTS & VISUALIZATIONS
+============================================================
+
+🚀 Generating comprehensive evaluation reports...
+============================================================
+✅ Loaded 20 evaluation scenarios from rag_evaluation_final.xlsx
+📊 Generated: score_comparison_boxplots.png
+📊 Generated: scenario_comparison_charts.png
+📊 Generated: rri_improvement_chart.png
+📊 Generated: rri_similarity_chart.png
+
+================================================================================
+📋 EVALUATION SUMMARY STATISTICS
+================================================================================
+
+🏆 JUDGE SCORES:
+   • Single Turn Average:  2.13/5
+   • Multi Turn Average:   3.09/5
+   • Average Improvement:  +0.96 points
+   • Improvement Percentage: +45.0%
+
+🎯 INTENT SIMILARITY:
+   • Single Turn Average:  0.360
+   • Multi Turn Average:   0.409
+   • Average Improvement:  +0.050
+   • Improvement Percentage: +13.8%
+
+📊 SCENARIO BREAKDOWN:
+   • Scenarios with Improvement: 15/20 (75.0%)
+   • Scenarios with Degradation: 2/20 (10.0%)
+   • Scenarios Unchanged:        3/20 (15.0%)
+
+💬 CONVERSATION DYNAMICS:
+   • Average Turns Used: 1.5
+   • Max Turns Used:     2
+   • Min Turns Used:     1
+
+================================================================================

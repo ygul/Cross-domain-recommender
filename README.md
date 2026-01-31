@@ -103,6 +103,7 @@ Cross-domain-recommender/
 │   ├── output/                     # Generated files
 │   └── raw/                        # Original source files
 ├── design/                         # Design documents and diagrams
+├── experiment/                     # Console outputs from experiments
 ├── notebook/                       # Jupyter notebooks
 │   └── generate_enriched_descriptions.ipynb
 ├── ChromaDualModelImporter.py      # Script to import data
